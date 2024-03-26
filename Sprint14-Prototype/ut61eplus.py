@@ -309,7 +309,7 @@ class UT61EPLUS:
 
     def __init__(self):
         """open device"""
-        self.dev = hid.device()
+        self.dev = hid.Device()
         self.dev.open(self.CP2110_VID, self.CP2110_PID)
         log.debug('device is open')
         #self.dev.nonblocking = 1
