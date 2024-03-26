@@ -309,20 +309,21 @@ class UT61EPLUS:
 
     def __init__(self):
         """open device"""
-        self.dev = hid.Device()
-        self.dev.open(self.CP2110_VID, self.CP2110_PID)
+        ## self.dev = hid.Device()
+        self.dev = hid.Device(self.CP2110_VID, self.CP2110_PID)
+        ## self.dev.open(self.CP2110_VID, self.CP2110_PID)
         log.debug('device is open')
         #self.dev.nonblocking = 1
-        self.dev.send_feature_report([0x41, 0x01])  # enable uart
-        self.dev.send_feature_report([0x50, 0x00, 0x00, 0x25, 0x80, 0x00, 0x00, 0x03, 0x00, 0x00])  # 9600 8N1 - from USB trace
-        self.dev.send_feature_report([0x43, 0x02])  # purge both fifos
+        self.dev.send_feature_report(bytes([0x41, 0x01]))  # enable uart
+        self.dev.send_feature_report(bytes([0x50, 0x00, 0x00, 0x25, 0x80, 0x00, 0x00, 0x03, 0x00, 0x00]))  # 9600 8N1 - from USB trace
+        self.dev.send_feature_report(bytes([0x43, 0x02]))  # purge both fifos
         log.debug('feature requests sent')
 
     def _write(self, b: bytes):
         buf = []
         buf.append(len(b))
         buf += b
-        self.dev.write(buf)
+        self.dev.write(bytes(buf))
 
     def _readResponse(self) -> bytes:
         # pylint: disable=unsupported-assignment-operation,unsubscriptable-object
