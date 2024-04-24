@@ -308,27 +308,29 @@ class UT61EPLUS:
         'not_peak': 78,
     }
 
-    def __init__(self):
+    selected_device = None
+
+    def __init__(self, device_number=None):
         """Find and open the UT61E+ device"""
         devices = hid.enumerate(self.CP2110_VID, self.CP2110_PID)
         if not devices:
             raise Exception("No UT61E+ device found.")
         
-        # Print information about each device and prompt the user to select one
-        print("Found UT61E+ devices:")
         for i, device in enumerate(devices):
-            print(f"{i + 1}. Manufacturer: {device['manufacturer_string']}, Serial Number: {device['serial_number']}")
-        
-        selection = input("Select the device (enter the corresponding number): ")
-        try:
-            selected_device = devices[int(selection) - 1]
-        except (ValueError, IndexError):
-            raise Exception("Invalid selection.")
+            devices = hid.enumerate(self.CP2110_VID, self.CP2110_PID)
+            if not devices:
+                raise Exception("No UT61E+ device found.")
+
+            if device_number == 1:
+                self.selected_device = devices[0]
+            elif device_number == 2:
+                self.selected_device = devices[1]
+            else:
+                print(f"Selected device number: {device_number}")
+                raise ValueError(f"Invalid device number: {device_number}")
         
         # Open the selected device
-        self.dev = hid.Device(selected_device['vendor_id'], selected_device['product_id'], selected_device['serial_number'])
-        print("Device connected successfully.")
-
+        self.dev = hid.Device(self.selected_device['vendor_id'], self.selected_device['product_id'], self.selected_device['serial_number'])
         self.dev.send_feature_report(bytes([0x41, 0x01]))  # enable uart
         self.dev.send_feature_report(bytes([0x50, 0x00, 0x00, 0x25, 0x80, 0x00, 0x00, 0x03, 0x00, 0x00]))  # 9600 8N1 - from USB trace
         self.dev.send_feature_report(bytes([0x43, 0x02]))  # purge both fifos
