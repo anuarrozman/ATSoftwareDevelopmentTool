@@ -13,6 +13,7 @@ import time
 from tkinter import messagebox
 import glob
 from dmm import DeviceSelectionApp
+import mysql.connector
 
 
 class SerialCommunicationApp:
@@ -26,6 +27,8 @@ class SerialCommunicationApp:
         self.read_thread = None  # Thread for reading data
 
         self.selected_port = ""
+        
+        self.mac_address_variable = ""
 
         self.create_widgets()
         self.create_popupwindow_widgets()
@@ -170,7 +173,7 @@ class SerialCommunicationApp:
                 print("Port is not open.")
         except serial.SerialException as e:
             print(f"Error: {e}")
-
+    
     def read_serial_data(self):
         while self.serial_port.is_open:
             try:
@@ -186,6 +189,17 @@ class SerialCommunicationApp:
                     if "." in decoded_data:
                         print("Factory Mode")
                         self.send_data_auto()
+                    
+                    if "3:MAC? = " in decoded_data:
+                        # Extract MAC address from the received data
+                        mac_address = decoded_data.split("=")[1].strip()
+                        # Store MAC address in the variable
+                        self.mac_address_variable = mac_address
+                        print("MAC Address:", mac_address)
+                        
+                        self.update_database(self.mac_address_variable)
+                        self.mac_address_variable = ""
+
             except UnicodeDecodeError as decode_error:
                 print(f"Error decoding data: {decode_error}")
                 self.receive_text.config(state=tk.NORMAL)
@@ -198,6 +212,57 @@ class SerialCommunicationApp:
                 self.receive_text.insert(tk.END, f"Error reading data: {e}\n")
                 self.receive_text.config(state=tk.DISABLED)
                 self.receive_text.see(tk.END)
+            
+    # def update_database(self, mac_address):
+        
+    #     connection = mysql.connector.connect(
+    #     host="localhost",
+    #     user="anuarrozman2303",
+    #     password="Matter2303!",
+    #     database="device_mac_sn"
+    #     )
+
+    #     cursor = connection.cursor()
+
+    #     # Update status to true for the selected certid
+    #     query = "INSERT INTO mac_address (dev_mac) VALUES (%s)"
+    #     cursor.execute(query, (mac_address,))
+    #     connection.commit()
+
+    #     cursor.close()
+    #     connection.close()
+    
+    def update_database(self, mac_address):
+        try:
+            connection = mysql.connector.connect(
+        host="localhost",
+        user="anuarrozman2303",
+        password="Matter2303!",
+        database="device_mac_sn"
+            )
+            
+            cursor = connection.cursor()
+
+            # Check if the MAC address already exists in the database
+            cursor.execute("SELECT * FROM mac_address WHERE dev_mac = %s", (mac_address,))
+            result = cursor.fetchone()
+
+            if result:
+                print("MAC address already exists in the database.")
+            else:
+                # Insert the MAC address into the database
+                cursor.execute("INSERT INTO mac_address (dev_mac) VALUES (%s)", (mac_address,))
+                connection.commit()
+                print("MAC address inserted into the database.")
+
+        except mysql.connector.Error as error:
+            print("Failed to update database:", error)
+
+        finally:
+            if connection.is_connected():
+                cursor.close()
+                connection.close()
+                print("MySQL connection closed.")
 
     def create_popupwindow_widgets(self):
         popup_button_frame = ttk.Frame(self.root)
@@ -223,8 +288,20 @@ class SerialCommunicationApp:
 
         manual_test_frame = ttk.Frame(manual_test_window)
         manual_test_frame.grid(row=0, column=0, padx=10, pady=10, sticky=tk.W)
-        self.create_buttons_from_config(self.load_config("ATSoftwareDevelopmentTool/Sprint16-Prototype/manual_test.ini"), manual_test_frame)
+        
+        # Search for manual_test.ini starting from the root directory
+        config_path = self.find_manual_test_ini("/")
+        if config_path:
+            self.create_buttons_from_config(self.load_config(config_path), manual_test_frame)
+        else:
+            print("manual_test.ini not found.")
 
+    def find_manual_test_ini(self, start_dir):
+        for dirpath, dirnames, filenames in os.walk(start_dir):
+            if "manual_test.ini" in filenames:
+                return os.path.join(dirpath, "manual_test.ini")
+        return None
+    
     def load_config(self, filename):
         config = ConfigParser()
         config.read(filename)

@@ -5,12 +5,12 @@ import serial
 import subprocess
 from tkinter import scrolledtext
 from threading import Thread
-from hidserialscan import get_hidraw_devices
 from tkinter import filedialog
 from configparser import ConfigParser
 import os
 import time
 from tkinter import messagebox
+import mysql.connector
 
 
 class SerialCommunicationApp:
@@ -27,24 +27,14 @@ class SerialCommunicationApp:
 
         # Create GUI elements
         self.create_widgets()
-        self.create_popupwindow_widgets()
         self.create_text_widgets()
         self.create_menubar()
-    
-    def exec_dmm(self):
-        script = "dmm.py"
-        output_file = "dmm_output.txt"
+
+    def exec_testapp(self):
+        script = "Sprint17-FactoryApp/prodtool.py"
 
         try:
             subprocess.run(["python3", script])
-
-            with open(output_file, "r") as file:
-                output = file.read()
-                self.receive_text.delete(1.0, tk.END)
-                self.receive_text.config(state=tk.NORMAL)
-                self.receive_text.insert(tk.END, output + '\n')
-                self.receive_text.config(state=tk.DISABLED)
-                self.receive_text.see(tk.END)
 
         except subprocess.CalledProcessError as e:
             print(f"Error running dmm.py: {e}")
@@ -52,22 +42,6 @@ class SerialCommunicationApp:
             self.receive_text.insert(tk.END, f"Error: {e}\n")
             self.receive_text.config(state=tk.DISABLED)
             self.receive_text.see(tk.END)
-            
-    def on_select_dmm_port(self,event):
-        selected_device = self.dmm_var.get()
-        print(f"Selected DMM device: {selected_device}")
-
-    def upload_file(self):
-        file_path = filedialog.askopenfilename(filetypes=[("INI files", "*.ini")])
-        if file_path:
-            # Read the contents of the .ini file
-            config = ConfigParser()
-            config.read(file_path)
-            # Write the contents to auto_test.ini
-            with open('auto_test.ini', 'w') as f:
-                config.write(f)
-            self.file_path_label.config(text="Selected File: " + file_path)
-            self.receive_text.delete(1.0, tk.END)
 
     def flash_tool_checking(self, receive_text):
         command = f"esptool.py --help"
@@ -86,37 +60,62 @@ class SerialCommunicationApp:
             receive_text.config(state=tk.DISABLED)
             receive_text.see(tk.END)
 
-    def flash_firmware(self,receive_text):
+    def find_bin_path(self, keyword):
+        for root, dirs, files in os.walk("/"):  
+            for file in files:
+                if file.endswith(".bin") and keyword in file:  
+                    return os.path.join(root, file) 
+        return None  
+
+    def flash_firmware(self, receive_text):
         selected_port = self.port_var.get()
         selected_baud = self.baud_var.get()
-        boot_loader_path = "firmware/boot_loader.bin"
-        partition_table_path = "firmware/partition_table.bin"
-        ota_data_initial_path = "firmware/ota_data_initial.bin"
-        fw_path = "firmware/firmware.bin"
+        
+        # Define keywords for each bin file
+        keywords = {
+            "boot_loader": "boot_loader",
+            "partition_table": "partition_table",
+            "ota_data_initial": "ota_data_initial",
+            "firmware": "adt_matter_project_A00000001_1_0_0"
+        }
+
+        # Find paths for each bin file using keywords
+        bin_paths = {key: self.find_bin_path(keyword) for key, keyword in keywords.items()}
+        
+        boot_loader_path = bin_paths["boot_loader"]
+        partition_table_path = bin_paths["partition_table"]
+        ota_data_initial_path = bin_paths["ota_data_initial"]
+        fw_path = bin_paths["firmware"]
+
 
         # Check if all paths are valid
-        if not all(os.path.exists(path) for path in [boot_loader_path, partition_table_path, ota_data_initial_path, fw_path]):
-            print("Error: Invalid file paths")
-            self.receive_text.insert(tk.END, "Error: Invalid file paths")
-            self.receive_text.see(tk.END)
+        if not all(bin_paths.values()):
+            print("Error: Unable to find one or more bin files")
+            receive_text.config(state=tk.NORMAL)
+            receive_text.insert(tk.END, "Error: Unable to find one or more bin files\n")
+            receive_text.config(state=tk.DISABLED)
+            receive_text.see(tk.END)
             return
 
         # Run esptool.py command
         command = f"esptool.py -p {selected_port} -b {selected_baud} write_flash 0x0 {boot_loader_path} 0xc000 {partition_table_path} 0x1e000 {ota_data_initial_path} 0x200000 {fw_path}"
+
+        
         try:
             result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
             output = result.stdout
             print(output)
-            self.receive_text.config(state=tk.NORMAL)
-            self.receive_text.insert(tk.END, output + '\n')
-            self.receive_text.config(state=tk.DISABLED)
-            self.receive_text.see(tk.END)
+            receive_text.config(state=tk.NORMAL)
+            receive_text.insert(tk.END, output + '\n')
+            receive_text.config(state=tk.DISABLED)
+            receive_text.see(tk.END)
         except subprocess.CalledProcessError as e:
             print(f"Error running esptool.py: {e}")
-            self.receive_text.config(state=tk.NORMAL)
-            self.receive_text.insert(tk.END, output + '\n')
-            self.receive_text.config(state=tk.DISABLED)
-            self.receive_text.see(tk.END)
+            receive_text.config(state=tk.NORMAL)
+            receive_text.insert(tk.END, f"Error: {e}\n")
+            receive_text.config(state=tk.DISABLED)
+            receive_text.see(tk.END)
+
 
     def create_menubar(self):
         menubar = tk.Menu(root)
@@ -146,7 +145,6 @@ class SerialCommunicationApp:
         tools_menu.add_command(label="Tools")
         # Associate the flash_tool_checking function with the menu item
         tools_menu.add_command(label="Check Flash Tool", command=lambda: self.flash_tool_checking(self.receive_text))
-        tools_menu.add_command(label="Upload Automated Test Script", command=self.upload_file)
         menubar.add_cascade(label="Tools", menu=tools_menu)
 
         # Help Menu
@@ -179,59 +177,102 @@ class SerialCommunicationApp:
 
         self.flash_button = ttk.Button(self.serial_baud_frame, text="Flash Firmware", command=lambda:self.flash_firmware(self.receive_text))
         self.flash_button.grid(row=0, column=4, padx=5, pady=5, sticky=tk.W)
+        
+        self.cert_flash_button = ttk.Button(self.serial_baud_frame, text="Flash Cert", command=self.flash_cert)
+        self.cert_flash_button.grid(row=0, column=5, padx=5, pady=5, sticky=tk.W)
+        
+    # Function to update status in the database
+    def update_status(self, certid):
+        # Connect to the database
+        connection = mysql.connector.connect(
+            host="localhost",
+            user="anuarrozman2303",
+            password="Matter2303!",
+            database="device_mac_sn"
+        )
 
-        self.port_label1 = tk.Label(self.serial_baud_frame, text="Factory Port:")
-        self.port_label1.grid(row=0, column=5, padx=5, pady=5, sticky=tk.W)
+        cursor = connection.cursor()
 
-        self.port_var1 = tk.StringVar()
-        self.port_dropdown1 = ttk.Combobox(self.serial_baud_frame, textvariable=self.port_var1)
-        self.port_dropdown1.grid(row=0, column=6, padx=5, pady=5, sticky=tk.W)
-        self.port_dropdown1['values'] = [port.device for port in serial.tools.list_ports.comports()]
+        # Update status to true for the selected certid
+        query = "UPDATE matter_certid SET status = TRUE WHERE certid = %s"
+        cursor.execute(query, (certid,))
+        connection.commit()
 
-        self.baud_label1 = tk.Label(self.serial_baud_frame, text="Baud Rate:")
-        self.baud_label1.grid(row=0, column=7, padx=5, pady=5, sticky=tk.W)
+        cursor.close()
+        connection.close()        
 
-        self.baud_var1 = tk.StringVar()
-        self.baud_dropdown1 = ttk.Combobox(self.serial_baud_frame, textvariable=self.baud_var1)
-        self.baud_dropdown1.grid(row=0, column=8, padx=5, pady=5, sticky=tk.W)
-        self.baud_dropdown1['values'] = ["9600", "115200", "460800"]
-        self.baud_dropdown1.set("115200")
+    # Function to retrieve a certid where status is not true
+    def get_certid(self):
+        # Connect to the database
+        connection = mysql.connector.connect(
+            host="localhost",
+            user="anuarrozman2303",
+            password="Matter2303!",
+            database="device_mac_sn"
+        )
 
-        self.open_port_button = ttk.Button(self.serial_baud_frame, text="Open Port", command=self.open_serial_port)
-        self.open_port_button.grid(row=0, column=9, padx=5, pady=5, sticky=tk.W)
+        cursor = connection.cursor()
 
-        self.close_port_button = ttk.Button(self.serial_baud_frame, text="Close Port", command=self.close_serial_port())
-        self.close_port_button.grid(row=0, column=10, padx=5, pady=5, sticky=tk.W)
+        # Retrieve a certid where status is NULL or FALSE
+        query = "SELECT certid FROM matter_certid WHERE status IS NULL OR status = FALSE LIMIT 1"
+        cursor.execute(query)
+        result = cursor.fetchone()
 
-        self.dmm_label = tk.Label(self.serial_baud_frame, text="DMM Port:")
-        self.dmm_label.grid(row=0, column=11, padx=5, pady=5, sticky=tk.W)
+        cursor.close()
+        connection.close()
 
-        self.dmm_var = tk.StringVar()
-        self.dmm_dropdown = ttk.Combobox(self.serial_baud_frame, textvariable=self.dmm_var)
-        self.dmm_dropdown.grid(row=0, column=12, padx=5, pady=5, sticky=tk.W)
-        self.dmm_dropdown.bind("<Button-1>", self.on_select_dmm_port)
-
-        self.dmm_button = tk.Button(self.serial_baud_frame, text="Open DMM", command=self.exec_dmm)
-        self.dmm_button.grid(row=0, column=13, padx=5, pady=5, sticky=tk.W)
-
-        # Create a label to display the selected file path
-        self.file_path_label = tk.Label(self.root, text="Selected file: None")
-        self.file_path_label.grid(row=4, column=0, padx=10, pady=10, sticky=tk.W)
-
-    def send_command(self, command):
-        if self.serial_port.is_open:
-            self.serial_port.write(command.encode())
-            print(f"Sent command: {command}")
+        if result:
+            return result[0]  # Return the certid
         else:
-            print("Serial port not open.")
+            return None  # Return None if no certid found
 
-    def send_data_auto(self):
-        auto_data = "polyaire&ADT\r\n"
-        if self.serial_port.is_open:
-            self.serial_port.write(auto_data.encode())
-            print(f"Auto-sent: {auto_data}")
+    def flash_cert(self):
+        certid = self.get_certid()
+        selected_port = self.port_var.get()  # Retrieve the selected port from the Combobox
+        if certid:
+            bin_path = self.get_bin_path(certid)
+            if bin_path:
+                if selected_port:  # Use the selected port obtained from the Combobox
+                    print(f"Flashing cert {certid} on port {selected_port}...")
+                    self.certify(bin_path, selected_port)  # Pass the selected port to the certify function
+                    print(f"Cert {certid} flashed successfully.")
+                    self.update_status(certid)  # Update status only if .bin file is found
+                    self.receive_text.config(state=tk.NORMAL)
+                    self.receive_text.insert(tk.END, f"Flashing cert {certid} on port {selected_port}...\n")
+                    self.receive_text.insert(tk.END, f"Cert {certid} flashed successfully.\n")
+                    self.receive_text.config(state=tk.DISABLED)
+                    self.receive_text.see(tk.END)
+                else:
+                    print("No port selected. Please select a port before flashing.")
+                    self.receive_text.config(state=tk.NORMAL)
+                    self.receive_text.insert(tk.END, "No port selected. Please select a port before flashing.\n")
+                    self.receive_text.config(state=tk.DISABLED)
+                    self.receive_text.see(tk.END)
+            else:
+                print("No .bin file found for this certid.")
+                self.receive_text.config(state=tk.NORMAL)
+                self.receive_text.insert(tk.END, "No .bin file found for this certid.\n")
+                self.receive_text.config(state=tk.DISABLED)
+                self.receive_text.see(tk.END)
         else:
-            print("Serial port not open.")
+            print("No available certid with status not true.")
+            self.receive_text.config(state=tk.NORMAL)
+            self.receive_text.insert(tk.END, "No available certid with status not true.\n")
+            self.receive_text.config(state=tk.DISABLED)
+            self.receive_text.see(tk.END)
+
+    # Function to get the path of the .bin file for the selected certid
+    def get_bin_path(self, certid):
+        for root, dirs, files in os.walk("/"):  # Walk through all files and directories in the current directory and its subdirectories
+            for file in files:
+                if file.endswith(".bin") and certid in file:  # Check if the file is a .bin file and contains the certid in its name
+                    return os.path.join(root, file)  # Return the path of the .bin file
+        return None  # Return None if no .bin file with the certid is found
+
+    # Function to flash the .bin file onto the device
+    def certify(self, bin_path, selected_port):
+        subprocess.run(["esptool.py", "-p", selected_port, "write_flash", "0x10000", bin_path])
+
 
     def open_serial_port(self):
         selected_port = self.port_var1.get()
@@ -287,53 +328,6 @@ class SerialCommunicationApp:
                 self.receive_text.config(state=tk.DISABLED)
                 self.receive_text.see(tk.END)
 
-    def create_popupwindow_widgets(self):
-        popup_button_frame = ttk.Frame(self.root)
-        popup_button_frame.grid(row=1, column=0, padx=10, pady=10, sticky=tk.W)
-
-        popup_label = ttk.Label(popup_button_frame, text="Funct Test", font=("Arial", 10))
-        popup_label.grid(row=0, column=0, padx=10, pady=5, sticky=tk.W)
-
-        # Auto / Manual        
-        popup_button = [
-            {"text": "Auto", "command":None, "column": 1},
-            {"text": "Manual", "command":lambda: self.open_manual_test_window(), "column": 2}
-        ]
-
-        for info in popup_button:
-            button = ttk.Button(popup_button_frame, text=info["text"], command=info["command"])
-            button.grid(row=0, column=info["column"], padx=10, pady=10, sticky=tk.W)
-    
-    def open_manual_test_window(self):
-        manual_test_window = tk.Toplevel(self.root)
-        manual_test_window.title("Manual Test")
-        manual_test_window.minsize(400, 300)
-
-        manual_test_frame = ttk.Frame(manual_test_window)
-        manual_test_frame.grid(row=0, column=0, padx=10, pady=10, sticky=tk.W)
-        self.create_buttons_from_config(self.load_config("ATSoftwareDevelopmentTool/Sprint14-Prototype/manual_test.ini"), manual_test_frame)
-
-    def load_config(self, filename):
-        config = ConfigParser()
-        config.read(filename)
-        return config
-
-    def create_buttons_from_config(self, config, parent):
-        sections = config.sections()
-        buttons = {}
-        for section in sections:
-            section_frame = tk.LabelFrame(parent, text=section)
-            section_frame.pack(padx=10, pady=5, fill="both", expand=True)
-
-            for key, value in config.items(section):
-                # Append \r\n to the value to ensure correct line endings
-                value_with_line_endings = value + "\r\n"
-                button = tk.Button(section_frame, text=key, command=lambda v=value_with_line_endings: self.send_command(v))
-                button.pack(side=tk.LEFT, padx=5, pady=5)
-                buttons[key] = button
-        return buttons
-
-
     def create_text_widgets(self):
         text_frame = ttk.Frame(self.root)
         text_frame.grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
@@ -352,7 +346,4 @@ class SerialCommunicationApp:
 if __name__ == "__main__":
     root = tk.Tk()
     app = SerialCommunicationApp(root)
-    hidraw_devices = get_hidraw_devices() 
-    app.dmm_dropdown['values'] = hidraw_devices
     root.mainloop()
-
