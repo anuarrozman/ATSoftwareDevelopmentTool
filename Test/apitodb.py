@@ -1,6 +1,8 @@
 import tkinter as tk
 import requests
 import mysql.connector
+import uuid
+
 
 # Function to create database table
 def create_table():
@@ -11,8 +13,8 @@ def create_table():
         database="device_mac_sn"
     )
     cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS devices
-                 (id INT AUTO_INCREMENT PRIMARY KEY, mac_address VARCHAR(255), serial_number VARCHAR(255))''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS device_info
+                 (matter_cert_id VARCHAR(255), serial_number VARCHAR(255))''')
     conn.commit()
     conn.close()
 
@@ -26,15 +28,17 @@ def insert_data(data):
     )
     cursor = conn.cursor()
     for device in data:
+        matter_cert_id = device.get("matter_cert_id", "N/A")
+        serial_number = device.get("serial_no", "N/A")  # Correct key to access serial number
         mac_address = device.get("mac_address", "N/A")
-        serial_number = device.get("serial_number", "N/A")
-        cursor.execute("INSERT INTO devices (mac_address, serial_number) VALUES (%s, %s)", (mac_address, serial_number))
+        cursor.execute("INSERT INTO device_info (matter_cert_id, serial_number, mac_address) VALUES (%s, %s, %s)", (matter_cert_id, serial_number, mac_address))
     conn.commit()
     conn.close()
 
+
 # Function to download and display data
 def download_data():
-    url = "http://localhost:3000/serialnumber"
+    url = "http://localhost:3000/devices"  # Correct endpoint
     try:
         response = requests.get(url)
         data = response.json()
@@ -47,9 +51,9 @@ def download_data():
 def display_data(data):
     listbox.delete(0, tk.END)
     for device in data:
-        mac_address = device.get("mac_address", "N/A")
-        serial_number = device.get("serial_number", "N/A")
-        listbox.insert(tk.END, f"MAC: {mac_address}, Serial: {serial_number}")
+        matter_cert_id = device.get("matter_cert_id", "N/A")
+        serial_number = device.get("serial_number", "N/A")  # Correct field name
+        listbox.insert(tk.END, f"Matter Cert ID: {matter_cert_id}, Serial: {serial_number}")
     status_label.config(text="Data downloaded successfully!")
 
 # Create table when the script is run
@@ -61,7 +65,7 @@ root.title("Device List")
 frame = tk.Frame(root)
 frame.pack(padx=10, pady=10)
 
-listbox = tk.Listbox(frame, width=50, height=10)
+listbox = tk.Listbox(frame, width=100, height=10)
 listbox.pack(side=tk.LEFT, fill=tk.BOTH)
 
 scrollbar = tk.Scrollbar(frame, orient=tk.VERTICAL, command=listbox.yview)
