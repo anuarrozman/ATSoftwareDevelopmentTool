@@ -7,6 +7,7 @@ import os
 import requests
 import mysql.connector
 from threading import Thread
+from configSettingWindow import SettingApp
 
 class SerialCommunicationApp:
     def __init__(self, root):
@@ -23,15 +24,6 @@ class SerialCommunicationApp:
         self.create_widgets()
         self.create_text_widgets()
         self.create_menubar()
-
-    def exec_testapp(self):
-        script = "Sprint17-FactoryApp/prodtool.py"
-
-        try:
-            subprocess.run(["python3", script])
-
-        except subprocess.CalledProcessError as e:
-            self.log_message(f"Error running dmm.py: {e}")
 
     def flash_tool_checking(self):
         command = "esptool.py --help"
@@ -290,6 +282,7 @@ class SerialCommunicationApp:
         file_menu = tk.Menu(menubar, tearoff=0)
         file_menu.add_command(label="New")
         file_menu.add_command(label="Open")
+        file_menu.add_command(label="Setting", command=self.config_setting)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=root.quit)
         menubar.add_cascade(label="File", menu=file_menu)
@@ -304,6 +297,10 @@ class SerialCommunicationApp:
         menubar.add_cascade(label="Help", menu=help_menu)
 
         root.config(menu=menubar)
+        
+    def config_setting(self):
+        SettingApp(tk.Toplevel(self.root))
+        # read from config.ini file and pass the addresses to flash_firmware function
 
     def create_widgets(self):
         self.serial_baud_frame = tk.Frame(root)
@@ -336,7 +333,7 @@ class SerialCommunicationApp:
         self.port_label1.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
         
         self.port_var1 = tk.StringVar()
-        self.port_dropdown1 = ttk.Combobox(self.serial_baud_frame, textvariable=self.port_var1)
+        self.port_dropdown1 = ttk.Combobox(self.serial_baud_frame, textvariable=self.port_var1) ##, state="disabled")
         self.port_dropdown1.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
         self.port_dropdown1['values'] = [port.device for port in serial.tools.list_ports.comports()]
         
