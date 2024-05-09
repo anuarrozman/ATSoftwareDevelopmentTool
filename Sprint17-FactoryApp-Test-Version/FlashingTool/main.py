@@ -7,7 +7,12 @@ import os
 import requests
 import mysql.connector
 from threading import Thread
-from configSettingWindow import SettingApp
+
+from components.settingWindow.settingWindow import SettingApp   # Address Configuration Setting Window for Flashing Tool
+from components.toolsBar.toolsBar import ToolsBar   # Flash Tool Checking and Download List
+from components.flashFirmware.flashFirmware import FlashFirmware   # Flash Firmware
+from components.flashCert.flashCert import FlashCert   # Flash Certificate
+
 
 class SerialCommunicationApp:
     def __init__(self, root):
@@ -24,116 +29,22 @@ class SerialCommunicationApp:
         self.create_widgets()
         self.create_text_widgets()
         self.create_menubar()
-
-    def flash_tool_checking(self):
-        command = "esptool.py --help"
-        try:
-            result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
-            output = result.stdout
-            self.log_message(output)
-        except subprocess.CalledProcessError as e:
-            self.log_message(f"Error running esptool.py: {e}")
-
-    def download_list(self):
-        url = "http://localhost:3000/devices"  # Correct endpoint
-        try:
-            response = requests.get(url)
-            data = response.json()
-            self.insert_data(data)
-            self.display_data(data)
-        except Exception as e:
-            self.log_message("Error downloading data: " + str(e))
-
-    def insert_data(self, data):
-        try:
-            conn = mysql.connector.connect(
-                host="localhost",
-                user="anuarrozman2303",
-                password="Matter2303!",
-                database="device_mac_sn"
-            )
-            cursor = conn.cursor()
-            for device in data:
-                matter_cert_id = device.get("matter_cert_id", "N/A")
-                serial_number = device.get("serial_no", "N/A")  # Correct key to access serial number
-                mac_address = device.get("mac_address", "N/A")
-                cursor.execute("INSERT INTO device_info (matter_cert_id, serial_number, mac_address) VALUES (%s, %s, %s)", (matter_cert_id, serial_number, mac_address))
-            conn.commit()
-            self.log_message("Data inserted successfully!")
-        except mysql.connector.Error as e:
-            self.log_message(f"Error inserting data into database: {e}")
-        finally:
-            cursor.close()
-            conn.close()
-
-    def find_bin_path(self, keyword):
-        for root, dirs, files in os.walk("/"):
-            for file in files:
-                if file.endswith(".bin") and keyword in file:
-                    return os.path.join(root, file)
-        return None
-
-    def flash_firmware(self):
-        selected_port = self.port_var.get()
-        selected_baud = self.baud_var.get()
         
-    # Function to retrieve a certid where status is not true
-    def get_certid(self):
-        # Connect to the database
-        connection = mysql.connector.connect(
-            host="localhost",
-            user="anuarrozman2303",
-            password="Matter2303!",
-            database="device_mac_sn"
-        )
-
-        cursor = connection.cursor()
-
-        # Retrieve a certid where status is NULL or FALSE
-        query = "SELECT matter_cert_id FROM device_info WHERE status IS NULL OR status = FALSE LIMIT 1"
-        cursor.execute(query)
-        result = cursor.fetchone()
-
-        cursor.close()
-        connection.close()
-
-        if result:
-            return result[0]  # Return the certid
-        else:
-            return None  # Return None if no certid found
-
-    # Function to get the path of the .bin file for the selected certid
-    def get_bin_path(self, certid):
-        for root, dirs, files in os.walk("/"):  # Walk through all files and directories in the current directory and its subdirectories
-            for file in files:
-                if file.endswith(".bin") and certid in file:  # Check if the file is a .bin file and contains the certid in its name
-                    return os.path.join(root, file)  # Return the path of the .bin file
-        return None  # Return None if no .bin file with the certid is found
+        self.toolsBar = ToolsBar()
+        self.flashFw = FlashFirmware(self.receive_text)
+        self.flashCert = FlashCert()
+        
+    def flash_tool_checking(self):
+        self.toolsBar.flash_tool_checking()
+        
+    def download_list(self):
+        self.toolsBar.download_list()
+    
+    def flash_firmware(self):
+        self.flashFw.flash_firmware(self.port_var, self.baud_var)
 
     def flash_cert(self):
-        certid = self.get_certid()
-        selected_port = self.port_var.get()  # Retrieve the selected port from the Combobox
-        if certid:
-            bin_path = self.get_bin_path(certid)
-            if bin_path:
-                if selected_port:  # Use the selected port obtained from the Combobox
-                    print(f"Flashing cert {certid} on port {selected_port}...")
-                    self.certify(bin_path, selected_port)  # Pass the selected port to the certify function
-                    print(f"Cert {certid} flashed successfully.")
-                    self.update_status(certid)  # Update status only if .bin file is found
-                    self.log_message(f"Flashing cert {certid} on port {selected_port}...")
-                    self.log_message(f"Cert {certid} flashed successfully.")
-                else:
-                    self.log_message("No port selected. Please select a port before flashing.")
-            else:
-                self.log_message("No .bin file found for this certid.")
-        else:
-            self.log_message("No available certid with status not true.")
-
-    # Function to flash the .bin file onto the device
-    def certify(self, bin_path, selected_port):
-        subprocess.run(["esptool.py", "-p", selected_port, "write_flash", "0x10000", bin_path])
-
+        self.flashCert.flash_cert(self.port_var)
 
     def open_serial_port(self):
         selected_port = self.port_var1.get()
@@ -160,24 +71,6 @@ class SerialCommunicationApp:
                 self.log_message("Port is not open.")
         except serial.SerialException as e:
             self.log_message(f"Error closing serial port: {e}")
-
-    def update_status(self, certid):
-        try:
-            connection = mysql.connector.connect(
-                host="localhost",
-                user="anuarrozman2303",
-                password="Matter2303!",
-                database="device_mac_sn"
-            )
-            cursor = connection.cursor()
-            query = "UPDATE device_info SET status = TRUE WHERE matter_cert_id = %s"
-            cursor.execute(query, (certid,))
-            connection.commit()
-        except mysql.connector.Error as e:
-            self.log_message(f"Error updating status in database: {e}")
-        finally:
-            cursor.close()
-            connection.close()
             
     def update_database(self, mac_address):
         try:
@@ -211,13 +104,13 @@ class SerialCommunicationApp:
                 connection.close()
                 print("MySQL connection closed.")
             
-    def display_data(self, data):
-        self.clear_received_data()  # Clear the text frame
-        for device in data:
-            matter_cert_id = device.get("matter_cert_id", "N/A")
-            serial_number = device.get("serial_number", "N/A")  # Correct field name
-            self.log_message(f"Matter Cert ID: {matter_cert_id}, Serial: {serial_number}")
-        self.log_message("Data downloaded successfully!")
+    # def display_data(self, data):
+    #     self.clear_received_data()  # Clear the text frame
+    #     for device in data:
+    #         matter_cert_id = device.get("matter_cert_id", "N/A")
+    #         serial_number = device.get("serial_number", "N/A")  # Correct field name
+    #         self.log_message(f"Matter Cert ID: {matter_cert_id}, Serial: {serial_number}")
+    #     self.log_message("Data downloaded successfully!")
         
     def get_device_mac(self):
         command = "FF:3;MAC?\r\n"
@@ -289,6 +182,7 @@ class SerialCommunicationApp:
 
         tools_menu = tk.Menu(menubar, tearoff=0)
         tools_menu.add_command(label="Check Flash Tool", command=self.flash_tool_checking)
+        file_menu.add_command(label="Setting", command=self.config_setting)
         tools_menu.add_command(label="Download List", command=self.download_list)
         menubar.add_cascade(label="Tools", menu=tools_menu)
 
