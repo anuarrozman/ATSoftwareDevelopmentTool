@@ -12,6 +12,7 @@ from components.settingWindow.settingWindow import SettingApp   # Address Config
 from components.toolsBar.toolsBar import ToolsBar   # Flash Tool Checking and Download List
 from components.flashFirmware.flashFirmware import FlashFirmware   # Flash Firmware
 from components.flashCert.flashCert import FlashCert   # Flash Certificate
+from components.serialCom.serialCom import SerialCom   # Serial Communication
 
 
 class SerialCommunicationApp:
@@ -33,6 +34,7 @@ class SerialCommunicationApp:
         self.toolsBar = ToolsBar()
         self.flashFw = FlashFirmware(self.receive_text)
         self.flashCert = FlashCert()
+        self.serialCom = SerialCom(self.receive_text)
         
     def flash_tool_checking(self):
         self.toolsBar.flash_tool_checking()
@@ -45,32 +47,14 @@ class SerialCommunicationApp:
 
     def flash_cert(self):
         self.flashCert.flash_cert(self.port_var)
-
+        
     def open_serial_port(self):
         selected_port = self.port_var1.get()
         selected_baud = int(self.baud_var1.get())
-        try:
-            self.serial_port = serial.Serial(selected_port, baudrate=selected_baud, timeout=1)
-            print(f"Opened port {selected_port} at {selected_baud} baud")
-            
-            # Store the selected port in the class variable
-            self.selected_port = selected_port
-
-            # Start a thread to continuously read data from the serial port
-            self.read_thread = Thread(target=self.read_serial_data)
-            self.read_thread.start()
-        except serial.SerialException as e:
-            print(f"Error: {e}")
+        self.serialCom.open_serial_port(selected_port, selected_baud)
 
     def close_serial_port(self):
-        try:
-            if self.serial_port and self.serial_port.is_open:
-                self.serial_port.close()
-                self.log_message("Closed port")
-            else:
-                self.log_message("Port is not open.")
-        except serial.SerialException as e:
-            self.log_message(f"Error closing serial port: {e}")
+        self.serialCom.close_serial_port()
             
     def update_database(self, mac_address):
         try:
@@ -103,72 +87,17 @@ class SerialCommunicationApp:
                 cursor.close()
                 connection.close()
                 print("MySQL connection closed.")
-            
-    # def display_data(self, data):
-    #     self.clear_received_data()  # Clear the text frame
-    #     for device in data:
-    #         matter_cert_id = device.get("matter_cert_id", "N/A")
-    #         serial_number = device.get("serial_number", "N/A")  # Correct field name
-    #         self.log_message(f"Matter Cert ID: {matter_cert_id}, Serial: {serial_number}")
-    #     self.log_message("Data downloaded successfully!")
         
     def get_device_mac(self):
         command = "FF:3;MAC?\r\n"
         self.send_command(command)
         
     def send_command(self, command):
-        if self.serial_port and self.serial_port.is_open:
-            self.serial_port.write(command.encode())
+        if self.serialCom.serial_port and self.serialCom.serial_port.is_open:
+            self.serialCom.serial_port.write(command.encode())
         else:
             self.log_message("Port is not open. Please open the port before sending commands.")
             
-    def send_data_auto(self):
-        auto_data = "polyaire&ADT\r\n"
-        if self.serial_port.is_open:
-            self.serial_port.write(auto_data.encode())
-            print(f"Auto-sent: {auto_data}")
-        else:
-            print("Serial port not open.")
-            
-    def read_serial_data(self):
-        while self.serial_port.is_open:
-            try:
-                raw_data = self.serial_port.readline()
-                decoded_data = raw_data.decode("utf-8", errors='replace').strip()
-
-                if decoded_data:
-                    self.receive_text.config(state=tk.NORMAL)
-                    self.receive_text.insert(tk.END, decoded_data + '\n')
-                    self.receive_text.config(state=tk.DISABLED)
-                    self.receive_text.see(tk.END)
-                    
-                    if "." in decoded_data:
-                        print("Factory Mode")
-                        self.send_data_auto()
-                    
-                    if "3:MAC? = " in decoded_data:
-                        # Extract MAC address from the received data
-                        mac_address = decoded_data.split("=")[1].strip()
-                        # Store MAC address in the variable
-                        self.mac_address_variable = mac_address
-                        print("MAC Address:", mac_address)
-                        
-                        self.update_database(self.mac_address_variable)
-                        self.mac_address_variable = ""
-
-            except UnicodeDecodeError as decode_error:
-                print(f"Error decoding data: {decode_error}")
-                self.receive_text.config(state=tk.NORMAL)
-                self.receive_text.insert(tk.END, f"Error decoding data: {decode_error}\n")
-                self.receive_text.config(state=tk.DISABLED)
-                self.receive_text.see(tk.END)
-            except Exception as e:
-                print(f"Error reading data: {e}")
-                self.receive_text.config(state=tk.NORMAL)
-                self.receive_text.insert(tk.END, f"Error reading data: {e}\n")
-                self.receive_text.config(state=tk.DISABLED)
-                self.receive_text.see(tk.END)
-
     def create_menubar(self):
         menubar = tk.Menu(root)
 
@@ -269,9 +198,14 @@ class SerialCommunicationApp:
         self.receive_text.insert(tk.END, message + '\n')
         self.receive_text.config(state=tk.DISABLED)
         self.receive_text.see(tk.END)
-
+        
+    # Added proper closing of the serial port during exit program
+    def on_exit(self):
+        self.close_serial_port()
+        root.destroy()
 
 if __name__ == "__main__":
     root = tk.Tk()
     app = SerialCommunicationApp(root)
+    root.protocol("WM_DELETE_WINDOW", app.on_exit)
     root.mainloop()
