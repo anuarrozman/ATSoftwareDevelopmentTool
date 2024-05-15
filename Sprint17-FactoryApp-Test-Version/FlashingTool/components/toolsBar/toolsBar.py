@@ -4,7 +4,7 @@ import requests
  
 class ToolsBar: 
     def flash_tool_checking(self):
-        command = "esptool --help"
+        command = "esptool.py --help"
         try:
             result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
             output = result.stdout
