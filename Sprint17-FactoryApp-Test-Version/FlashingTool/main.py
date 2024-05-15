@@ -19,7 +19,10 @@ class SerialCommunicationApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Serial Communication App")
-        self.root.minsize(600, 300)  # Set minimum window size
+        # self.root.minsize(600, 300)  # Set minimum window size
+        # self.root.attributes('-fullscreen', True)  # Set the window to full screen mode
+        self.root.attributes('-zoomed', True)  # Maximize the window to full screen mode
+
 
         # Serial port configuration
         self.serial_port = None
@@ -55,38 +58,6 @@ class SerialCommunicationApp:
 
     def close_serial_port(self):
         self.serialCom.close_serial_port()
-            
-    def update_database(self, mac_address):
-        try:
-            connection = mysql.connector.connect(
-        host="localhost",
-        user="anuarrozman2303",
-        password="Matter2303!",
-        database="device_mac_sn"
-            )
-            
-            cursor = connection.cursor()
-
-            # Check if the MAC address already exists in the database
-            cursor.execute("SELECT * FROM device_info WHERE mac_address = %s", (mac_address,))
-            result = cursor.fetchone()
-
-            if result:
-                print("MAC address already exists in the database.")
-            else:
-                # Insert the MAC address into the database
-                cursor.execute("INSERT INTO device_info (mac_address) VALUES (%s)", (mac_address,))
-                connection.commit()
-                print("MAC address inserted into the database.")
-
-        except mysql.connector.Error as error:
-            print("Failed to update database:", error)
-
-        finally:
-            if connection.is_connected():
-                cursor.close()
-                connection.close()
-                print("MySQL connection closed.")
         
     def get_device_mac(self):
         command = "FF:3;MAC?\r\n"

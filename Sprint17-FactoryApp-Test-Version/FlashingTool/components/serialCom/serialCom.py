@@ -3,10 +3,11 @@ import serial.tools.list_ports
 from threading import Thread
 import tkinter as tk
 
-
+from components.updateDB.updateDB import UpdateDB
 class SerialCom:
     def __init__(self, receive_text):
         self.receive_text = receive_text  
+        self.update_db = UpdateDB()
     
     def open_serial_port(self, selected_port, selected_baud):
         try:
@@ -55,7 +56,7 @@ class SerialCom:
                         self.mac_address_variable = mac_address
                         print("MAC Address:", mac_address)
                         
-                        self.update_database(self.mac_address_variable)
+                        self.update_db.update_database(self.mac_address_variable)
                         self.mac_address_variable = ""
 
             except UnicodeDecodeError as decode_error:

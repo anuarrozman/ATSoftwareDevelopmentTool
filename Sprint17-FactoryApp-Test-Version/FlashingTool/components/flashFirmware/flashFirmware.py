@@ -24,7 +24,7 @@ class FlashFirmware:
             "boot_loader": "boot_loader",
             "partition_table": "partition_table",
             "ota_data_initial": "ota_data_initial",
-            "firmware": "adt_matter_project_A00000001_1_0_0"
+            "firmware": "adt_matter_project_A00000005_1_0_0-de1"
         }
 
         # Find paths for each bin file using keywords
