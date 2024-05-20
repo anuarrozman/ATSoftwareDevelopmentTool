@@ -4,7 +4,7 @@ import configparser
 config = configparser.ConfigParser()
 
 # Read the config.ini file
-config.read('/home/anuar/ProdTools/ATSoftwareDevelopmentTool/Test/config.ini')
+config.read('/home/anuar/ProdTools/ATSoftwareDevelopmentTool/config.ini')
 
 # Accessing values from sections
 value1 = config['Section1']['key1']
