@@ -186,8 +186,8 @@ class SerialCommunicationApp:
         self.receive_text.see(tk.END)
 
     def on_exit(self):
-        self.close_serial_port()
         self.root.destroy()
+        self.close_serial_port()
 
 if __name__ == "__main__":
     root = tk.Tk()
