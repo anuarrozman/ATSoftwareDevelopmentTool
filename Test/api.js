@@ -3,11 +3,9 @@ const app = express();
 
 // Mock device data
 const devices = [
-    { serial_no: "A00000005", mac_address: "xxxx" , matter_cert_id: "9d442a79-1f15-429e-815f-77caa3050562"},
-    { serial_no: "A00000006", mac_address: "yyyy" , matter_cert_id: "ed39c959-d7c9-459b-88d8-2675b7cc4e41"},
-    { serial_no: "A00000007", mac_address: "zzzz" , matter_cert_id: "8aba3236-04c9-4dba-a1fe-d8d90025f406"},
-    { serial_no: "A00000008", mac_address: "aaaa" , matter_cert_id: "304fadbb-21bd-451d-9425-42564555f6d0"},
-    { serial_no: "A00000009", mac_address: "bbbb" , matter_cert_id: "0e826ae7-2f8a-47d1-bc33-82f90e9cf7a6"}
+    { serial_no: "A00000015", mac_address: "xxxx" , matter_cert_id: "54a1121b-dc1a-4b87-93f3-c7e5139c71c5"},
+    { serial_no: "A00000016", mac_address: "yyyy" , matter_cert_id: "c2efeba3-abfd-4191-87d7-42985ab1747c"},
+    { serial_no: "A00000017", mac_address: "zzzz" , matter_cert_id: "b1b05aa7-0697-4fb9-8277-2aee3d10854a"}
 ];
 
 // Endpoint to retrieve device data

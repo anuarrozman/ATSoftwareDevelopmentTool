@@ -11,7 +11,10 @@ class DeviceSelectionApp:
         try:
             self.selected_device_number = device_number  # Store the selected device number
             devices = hid.enumerate(UT61EPLUS.CP2110_VID, UT61EPLUS.CP2110_PID)
+            print("Devices: ")
+            print(devices)
             self.read_multimeter()
+            # print(f"Selected device: {devices[device_number]}")
         except Exception as e:
             messagebox.showerror("Error", str(e))
 

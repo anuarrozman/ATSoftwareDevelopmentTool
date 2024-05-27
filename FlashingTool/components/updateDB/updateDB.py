@@ -22,8 +22,8 @@ class UpdateDB:
             else:
                 # Insert the MAC address into the database if it doesn't exist
                 sql_query = """
-                            UPDATE device_info mac_address = %s 
-                            WHERE status = 0
+                            UPDATE device_info SET mac_address = %s, status = 1
+                            WHERE status = 0;
                             """
                 cursor.execute(sql_query, (mac_address,))
                 connection.commit()
