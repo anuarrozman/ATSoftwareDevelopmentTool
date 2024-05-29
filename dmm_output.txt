@@ -1,18 +1,18 @@
 
-mode=ACV
+mode=DCV
 range=0
-display=0.0377
-display_decimal=0.0377
+display=0.0112
+display_decimal=0.0112
 display_unit=V
 overload=False
-value=0.0377
+value=0.0112
 unit=V
 isMax=False
 ismin=False
 isHold=False
 isRel=False
 isAuto=True
-hasBatteryWarning=False
+hasBatteryWarning=True
 hashasHVWarning=False
 isDC=False
 isMaxPeak=False
