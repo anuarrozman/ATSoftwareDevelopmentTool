@@ -27,14 +27,13 @@ class DeviceSelectionApp:
         self.refresh_devices()
 
     def refresh_devices(self):
-        # try:
-        #     devices = hid.enumerate(UT61EPLUS.CP2110_VID, UT61EPLUS.CP2110_PID)
-        #     self.device_combo['values'] = [f"{i}: {device['product_string']}" for i, device in enumerate(devices)]
-        #     if devices:
-        #         self.device_combo.current(0)
-        # except Exception as e:
-        #     messagebox.showerror("Error", str(e))
-        pass
+        try:
+            devices = hid.enumerate(UT61EPLUS.CP2110_VID, UT61EPLUS.CP2110_PID)
+            self.device_combo['values'] = [f"{i}: {device['product_string']}" for i, device in enumerate(devices)]
+            if devices:
+                self.device_combo.current(0)
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
     def on_select_device(self):
         selected_index = self.device_combo.current()
