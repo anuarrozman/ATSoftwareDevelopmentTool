@@ -1,9 +1,10 @@
 import tkinter as tk
-from tkinter import ttk, scrolledtext
+from tkinter import ttk, scrolledtext, messagebox, filedialog
 import serial.tools.list_ports
 import os
 from tkinter import messagebox
 from cryptography.fernet import Fernet
+import configparser
 
 from components.settingWindow.settingWindow import SettingApp
 from components.toolsBar.toolsBar import ToolsBar
@@ -16,6 +17,7 @@ from components.dmmReader.dmmReader import DeviceSelectionApp
 from components.dmmReader.ut61eplus import UT61EPLUS
 from components.adminLoginWindow.adminLoginWindow import AdminLoginApp
 from components.manualTest.manualTest import ManualTestApp
+from components.uploadReport import uploadReport
 
 class SerialCommunicationApp:
     def __init__(self, root):
@@ -40,17 +42,17 @@ class SerialCommunicationApp:
     def initialize_gui(self):
         self.create_menubar()
         self.create_widgets()
-        self.create_text_widgets()
+        # self.create_text_widgets()
 
         version = self.read_version_from_file("version.txt")  # Read version from file
         self.add_version_label(version)  # Add version number here
 
     def initialize_components(self):
         self.toolsBar = ToolsBar()
-        self.flashFw = FlashFirmware(self.receive_text)
-        self.flashCert = FlashCert(self.log_message)
-        self.serialCom = SerialCom(self.receive_text)
-        self.sendEntry = WriteDeviceInfo(self.send_command, self.log_message)
+        self.flashFw = FlashFirmware() #(self.receive_text)
+        self.flashCert = FlashCert() #(self.log_message)
+        self.serialCom = SerialCom() #(self.receive_text)
+        self.sendEntry = WriteDeviceInfo(self.send_command) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame)
         self.multimeter = Multimeter()
 
@@ -149,6 +151,34 @@ class SerialCommunicationApp:
         except Exception as e:
             print(f"An error occurred: {e}")
             return None
+        
+    def upload_report(self):
+        ini_file_path = filedialog.askopenfilename(title="Select .ini file", filetypes=[("INI files", "*.ini")])
+        if not ini_file_path:
+            return
+        
+        config = configparser.ConfigParser()
+        config.read(ini_file_path)
+        
+        # Create a single dictionary from the INI file sections
+        combined_data = {}
+        for section in config.sections():
+            combined_data.update(config[section])
+        
+        # Convert to the desired JSON format: a list of one dictionary
+        data = [combined_data]
+
+        # Debugging: Print the data dictionary to verify its contents
+        print("Converted data:", data)
+        
+        api_url = "http://localhost:4000/api/endpoint"   # Replace with your actual API endpoint
+        
+        response = uploadReport.post_report(api_url, data)
+        
+        if response and response.status_code == 200:
+            messagebox.showinfo("Success", "Report uploaded successfully!")
+        else:
+            messagebox.showerror("Error", "Failed to upload report.")
 
     def create_widgets(self):
         self.serial_baud_frame = tk.Frame(self.root)
@@ -206,32 +236,35 @@ class SerialCommunicationApp:
         self.dmm_frame = tk.Frame(self.root)
         self.dmm_frame.grid(row=3, column=0, padx=10, pady=10, sticky=tk.W)
 
-    def create_text_widgets(self):
-        text_frame = ttk.Frame(self.root)
-        text_frame.grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
+        self.upload_report_button = ttk.Button(self.dmm_frame, text="Upload Report", command=self.upload_report)
+        self.upload_report_button.grid(row=4, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.receive_text = scrolledtext.ScrolledText(text_frame, wrap=tk.WORD, state=tk.DISABLED, height=24, width=48)
-        self.receive_text.grid(row=2, column=0, columnspan=5, padx=5, pady=5, sticky=tk.W)
+    # def create_text_widgets(self):
+    #     text_frame = ttk.Frame(self.root)
+    #     text_frame.grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
 
-        self.clear_button = ttk.Button(text_frame, text="Clear", command=self.clear_received_data)
-        self.clear_button.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
+    #     self.receive_text = scrolledtext.ScrolledText(text_frame, wrap=tk.WORD, state=tk.DISABLED, height=24, width=48)
+    #     self.receive_text.grid(row=2, column=0, columnspan=5, padx=5, pady=5, sticky=tk.W)
 
-        self.send_entry = ttk.Entry(text_frame, width=48)
-        self.send_entry.grid(row=4, column=0, columnspan=4, padx=5, pady=5, sticky=tk.W)
+    #     self.clear_button = ttk.Button(text_frame, text="Clear", command=self.clear_received_data)
+    #     self.clear_button.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.send_button = ttk.Button(text_frame, text="Send", command=lambda: self.sendEntry.send_entry_command(self.send_entry))
-        self.send_button.grid(row=4, column=4, padx=5, pady=5, sticky=tk.W)
+    #     self.send_entry = ttk.Entry(text_frame, width=48)
+    #     self.send_entry.grid(row=4, column=0, columnspan=4, padx=5, pady=5, sticky=tk.W)
 
-    def clear_received_data(self):
-        self.receive_text.config(state=tk.NORMAL)
-        self.receive_text.delete(1.0, tk.END)
-        self.receive_text.config(state=tk.DISABLED)
+    #     self.send_button = ttk.Button(text_frame, text="Send", command=lambda: self.sendEntry.send_entry_command(self.send_entry))
+    #     self.send_button.grid(row=4, column=4, padx=5, pady=5, sticky=tk.W)
 
-    def log_message(self, message):
-        self.receive_text.config(state=tk.NORMAL)
-        self.receive_text.insert(tk.END, message + '\n')
-        self.receive_text.config(state=tk.DISABLED)
-        self.receive_text.see(tk.END)
+    # def clear_received_data(self):
+    #     self.receive_text.config(state=tk.NORMAL)
+    #     self.receive_text.delete(1.0, tk.END)
+    #     self.receive_text.config(state=tk.DISABLED)
+
+    # def log_message(self, message):
+    #     self.receive_text.config(state=tk.NORMAL)
+    #     self.receive_text.insert(tk.END, message + '\n')
+    #     self.receive_text.config(state=tk.DISABLED)
+    #     self.receive_text.see(tk.END)
 
     def read_version_from_file(self, file_name):
         file_path = os.path.join(os.path.dirname(__file__), file_name)

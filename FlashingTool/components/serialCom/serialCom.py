@@ -5,8 +5,8 @@ import tkinter as tk
 
 from components.updateDB.updateDB import UpdateDB
 class SerialCom:
-    def __init__(self, receive_text):
-        self.receive_text = receive_text  
+    def __init__(self): #, receive_text):
+        # self.receive_text = receive_text  
         self.update_db = UpdateDB()
     
     def open_serial_port(self, selected_port, selected_baud):

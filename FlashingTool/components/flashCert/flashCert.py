@@ -4,8 +4,8 @@ import subprocess
 import configparser
 
 class FlashCert:
-    def __init__(self, log_message_callback):
-        self.log_message_callback = log_message_callback
+    def __init__(self): #, log_message_callback):
+        # self.log_message_callback = log_message_callback
         self.db_config = {
             "host": "localhost",
             "user": "anuarrozman2303",
@@ -119,12 +119,12 @@ class FlashCert:
 
     def log_message(self, message):
         print(message)  # Replace this with your preferred logging mechanism
-        self.log_message_callback(message)
+        # self.log_message_callback(message)
 
 # Example usage:
 def log_callback(message):
     # Replace this with your logging mechanism
     print(message)
 
-flash_cert_instance = FlashCert(log_callback)
+flash_cert_instance = FlashCert() #(log_callback)
 # Use the flash_cert_instance to call methods like flash_cert(), etc.

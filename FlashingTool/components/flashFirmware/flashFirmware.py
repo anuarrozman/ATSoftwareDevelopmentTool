@@ -5,8 +5,8 @@ import os
 
 class FlashFirmware:
     
-    def __init__(self, receive_text):
-        self.receive_text = receive_text
+    # def __init__(self, receive_text):
+    #     self.receive_text = receive_text
     
     def find_bin_path(self, keyword):
         for root, dirs, files in os.walk("/"):
