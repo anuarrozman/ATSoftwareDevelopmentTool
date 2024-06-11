@@ -287,10 +287,12 @@ class SerialCommunicationApp:
 
     def set_servo_angle(self):
         angle = self.angle_var.get()
+        print(f"Setting servo angle to: {angle}")  # Debug print
         if 0 <= angle <= 180:
             self.servo_controller.set_angle(angle)
         else:
             messagebox.showerror("Invalid Angle", "Please enter an angle between 0 and 180.")
+
 
     def read_servo_config(self):
         config_file_path = "servo.ini"
@@ -299,10 +301,13 @@ class SerialCommunicationApp:
             config.read(config_file_path)
             angle = config.getint("SERVO", "angle", fallback=90)
             self.angle_var.set(angle)
+            print(f"Loaded angle from config: {angle}")  # Debug print
             messagebox.showinfo("Config Loaded", f"Loaded angle: {angle}")
             self.set_servo_angle()  # Execute the servo motor with the loaded angle
         else:
+            print(f"Config file {config_file_path} not found.")  # Debug print
             messagebox.showerror("Error", f"Config file {config_file_path} not found.")
+
 
     def read_version_from_file(self, file_name):
         file_path = os.path.join(os.path.dirname(__file__), file_name)
