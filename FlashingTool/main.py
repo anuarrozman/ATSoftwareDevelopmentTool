@@ -243,9 +243,9 @@ class SerialCommunicationApp:
 
         # Servo Control
         self.servo_frame = tk.Frame(self.root)
-        self.servo_frame.grid(row=5, column=0, padx=10, pady=10, sticky=tk.W)
+        self.servo_frame.grid(row=4, column=0, padx=10, pady=10, sticky=tk.W)
 
-        self.angle_label = tk.Label(self.servo_frame, text="Set Angle:")
+        self.angle_label = tk.Label(self.servo_frame, text="Enter Servo Angle:")
         self.angle_label.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
 
         self.angle_var = tk.IntVar()
@@ -255,8 +255,8 @@ class SerialCommunicationApp:
         self.set_angle_button = ttk.Button(self.servo_frame, text="Set Angle", command=self.set_servo_angle)
         self.set_angle_button.grid(row=0, column=2, padx=5, pady=5, sticky=tk.W)
 
-        self.read_config_button = ttk.Button(self.servo_frame, text="Read Config", command=self.read_servo_config)
-        self.read_config_button.grid(row=0, column=3, padx=5, pady=5, sticky=tk.W)
+        
+
 
     # def create_text_widgets(self):
     #     text_frame = ttk.Frame(self.root)
@@ -287,12 +287,10 @@ class SerialCommunicationApp:
 
     def set_servo_angle(self):
         angle = self.angle_var.get()
-        print(f"Setting servo angle to: {angle}")  # Debug print
         if 0 <= angle <= 180:
             self.servo_controller.set_angle(angle)
         else:
             messagebox.showerror("Invalid Angle", "Please enter an angle between 0 and 180.")
-
 
     def read_servo_config(self):
         config_file_path = "servo.ini"
@@ -301,13 +299,9 @@ class SerialCommunicationApp:
             config.read(config_file_path)
             angle = config.getint("SERVO", "angle", fallback=90)
             self.angle_var.set(angle)
-            print(f"Loaded angle from config: {angle}")  # Debug print
             messagebox.showinfo("Config Loaded", f"Loaded angle: {angle}")
-            self.set_servo_angle()  # Execute the servo motor with the loaded angle
         else:
-            print(f"Config file {config_file_path} not found.")  # Debug print
             messagebox.showerror("Error", f"Config file {config_file_path} not found.")
-
 
     def read_version_from_file(self, file_name):
         file_path = os.path.join(os.path.dirname(__file__), file_name)
