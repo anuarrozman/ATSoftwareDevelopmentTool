@@ -261,7 +261,7 @@ class SerialCommunicationApp:
         self.load_config.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
 
         self.press_button = ttk.Button(self.servo_frame, text="Press Button", command=self.press_button)
-        self.press_button.grid(row=4, column=0, columnspan=2, padx=5, pady=5, sticky=tk.W)
+        self.press_button.grid(row=3, column=1, columnspan=2, padx=5, pady=5, sticky=tk.W)
 
         self.dmm_frame = tk.Frame(self.root)
         self.dmm_frame.grid(row=3, column=0, padx=10, pady=10, sticky=tk.W)
