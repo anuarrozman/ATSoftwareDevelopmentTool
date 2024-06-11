@@ -300,6 +300,7 @@ class SerialCommunicationApp:
             angle = config.getint("SERVO", "angle", fallback=90)
             self.angle_var.set(angle)
             messagebox.showinfo("Config Loaded", f"Loaded angle: {angle}")
+            self.set_servo_angle()  # Execute the servo motor with the loaded angle
         else:
             messagebox.showerror("Error", f"Config file {config_file_path} not found.")
 
