@@ -257,8 +257,11 @@ class SerialCommunicationApp:
         self.pressing_time_entry = tk.Entry(self.servo_frame)
         self.pressing_time_entry.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
 
+        self.load_config = ttk.Button(self.servo_frame, text="Load Config", command=None)
+        self.load_config.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
+
         self.press_button = ttk.Button(self.servo_frame, text="Press Button", command=self.press_button)
-        self.press_button.grid(row=3, column=0, columnspan=2, padx=5, pady=5, sticky=tk.W)
+        self.press_button.grid(row=4, column=0, columnspan=2, padx=5, pady=5, sticky=tk.W)
 
         self.dmm_frame = tk.Frame(self.root)
         self.dmm_frame.grid(row=3, column=0, padx=10, pady=10, sticky=tk.W)
