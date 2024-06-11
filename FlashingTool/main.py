@@ -255,6 +255,36 @@ class SerialCommunicationApp:
         self.set_angle_button = ttk.Button(self.servo_frame, text="Set Angle", command=self.set_servo_angle)
         self.set_angle_button.grid(row=0, column=2, padx=5, pady=5, sticky=tk.W)
 
+        # Add the new UI elements for pressing time and duration
+        self.time_label = tk.Label(self.servo_frame, text="Enter Pressing Time:")
+        self.time_label.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.time_var = tk.IntVar()
+        self.time_entry = ttk.Entry(self.servo_frame, textvariable=self.time_var)
+        self.time_entry.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
+
+        self.duration_label = tk.Label(self.servo_frame, text="Enter Pressing Duration:")
+        self.duration_label.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.duration_var = tk.DoubleVar()
+        self.duration_entry = ttk.Entry(self.servo_frame, textvariable=self.duration_var)
+        self.duration_entry.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
+
+        self.press_button = ttk.Button(self.servo_frame, text="Press Button", command=self.press_button)
+        self.press_button.grid(row=2, column=2, padx=5, pady=5, sticky=tk.W)
+
+    # Add this new method to handle pressing the button with the servo
+    def press_button(self):
+        pressing_time = self.time_var.get()
+        button_angle = self.angle_var.get()
+        pressing_duration = self.duration_var.get()
+
+        for i in range(pressing_time):
+            print(f"Pressing button {i+1} time")
+            self.servo_controller.set_angle(button_angle)
+            time.sleep(pressing_duration)
+            self.servo_controller.set_angle(0)
+            time.sleep(0.5)
         
 
 
@@ -284,25 +314,7 @@ class SerialCommunicationApp:
     #     self.receive_text.insert(tk.END, message + '\n')
     #     self.receive_text.config(state=tk.DISABLED)
     #     self.receive_text.see(tk.END)
-
-    def set_servo_angle(self):
-        angle = self.angle_var.get()
-        if 0 <= angle <= 180:
-            self.servo_controller.set_angle(angle)
-        else:
-            messagebox.showerror("Invalid Angle", "Please enter an angle between 0 and 180.")
-
-    def read_servo_config(self):
-        config_file_path = "servo.ini"
-        if os.path.exists(config_file_path):
-            config = configparser.ConfigParser()
-            config.read(config_file_path)
-            angle = config.getint("SERVO", "angle", fallback=90)
-            self.angle_var.set(angle)
-            messagebox.showinfo("Config Loaded", f"Loaded angle: {angle}")
-        else:
-            messagebox.showerror("Error", f"Config file {config_file_path} not found.")
-
+    
     def read_version_from_file(self, file_name):
         file_path = os.path.join(os.path.dirname(__file__), file_name)
         try:
