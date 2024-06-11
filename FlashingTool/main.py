@@ -1,10 +1,10 @@
 import tkinter as tk
-from tkinter import ttk, scrolledtext, messagebox, filedialog
+from tkinter import ttk, filedialog, messagebox
 import serial.tools.list_ports
 import os
-from tkinter import messagebox
-from cryptography.fernet import Fernet
 import configparser
+from cryptography.fernet import Fernet
+import time
 
 from components.settingWindow.settingWindow import SettingApp
 from components.toolsBar.toolsBar import ToolsBar
@@ -18,6 +18,7 @@ from components.dmmReader.ut61eplus import UT61EPLUS
 from components.adminLoginWindow.adminLoginWindow import AdminLoginApp
 from components.manualTest.manualTest import ManualTestApp
 from components.uploadReport import uploadReport
+from components.servoControl.servoControl import ServoController
 
 class SerialCommunicationApp:
     def __init__(self, root):
@@ -55,6 +56,7 @@ class SerialCommunicationApp:
         self.sendEntry = WriteDeviceInfo(self.send_command) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame)
         self.multimeter = Multimeter()
+        self.servoController = ServoController()
 
     def refresh_dmm_devices(self):
         self.dmmReader.refresh_devices()
@@ -239,6 +241,23 @@ class SerialCommunicationApp:
         self.upload_report_button = ttk.Button(self.dmm_frame, text="Upload Report", command=self.upload_report)
         self.upload_report_button.grid(row=4, column=0, padx=5, pady=5, sticky=tk.W)
 
+        # Servo Control
+        self.servo_frame = tk.Frame(self.root)
+        self.servo_frame.grid(row=5, column=0, padx=10, pady=10, sticky=tk.W)
+
+        self.angle_label = tk.Label(self.servo_frame, text="Set Angle:")
+        self.angle_label.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.angle_var = tk.IntVar()
+        self.angle_entry = ttk.Entry(self.servo_frame, textvariable=self.angle_var)
+        self.angle_entry.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
+
+        self.set_angle_button = ttk.Button(self.servo_frame, text="Set Angle", command=self.set_servo_angle)
+        self.set_angle_button.grid(row=0, column=2, padx=5, pady=5, sticky=tk.W)
+
+        self.read_config_button = ttk.Button(self.servo_frame, text="Read Config", command=self.read_servo_config)
+        self.read_config_button.grid(row=0, column=3, padx=5, pady=5, sticky=tk.W)
+
     # def create_text_widgets(self):
     #     text_frame = ttk.Frame(self.root)
     #     text_frame.grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
@@ -266,6 +285,24 @@ class SerialCommunicationApp:
     #     self.receive_text.config(state=tk.DISABLED)
     #     self.receive_text.see(tk.END)
 
+    def set_servo_angle(self):
+        angle = self.angle_var.get()
+        if 0 <= angle <= 180:
+            self.servo_controller.set_angle(angle)
+        else:
+            messagebox.showerror("Invalid Angle", "Please enter an angle between 0 and 180.")
+
+    def read_servo_config(self):
+        config_file_path = "servo.ini"
+        if os.path.exists(config_file_path):
+            config = configparser.ConfigParser()
+            config.read(config_file_path)
+            angle = config.getint("SERVO", "angle", fallback=90)
+            self.angle_var.set(angle)
+            messagebox.showinfo("Config Loaded", f"Loaded angle: {angle}")
+        else:
+            messagebox.showerror("Error", f"Config file {config_file_path} not found.")
+
     def read_version_from_file(self, file_name):
         file_path = os.path.join(os.path.dirname(__file__), file_name)
         try:
@@ -292,4 +329,3 @@ if __name__ == "__main__":
     app = SerialCommunicationApp(root)
     root.protocol("WM_DELETE_WINDOW", app.on_exit)
     root.mainloop()
-
