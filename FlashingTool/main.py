@@ -1,9 +1,10 @@
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk, scrolledtext, messagebox, filedialog
 import serial.tools.list_ports
 import os
-import configparser
+from tkinter import messagebox
 from cryptography.fernet import Fernet
+import configparser
 import time
 
 from components.settingWindow.settingWindow import SettingApp
@@ -56,7 +57,7 @@ class SerialCommunicationApp:
         self.sendEntry = WriteDeviceInfo(self.send_command) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame)
         self.multimeter = Multimeter()
-        self.servoController = ServoController()
+        self.servo_controller = ServoController()
 
     def refresh_dmm_devices(self):
         self.dmmReader.refresh_devices()
@@ -235,86 +236,48 @@ class SerialCommunicationApp:
         self.read_device_mac_button = ttk.Button(self.serial_baud_frame, text="Read Device MAC", command=self.get_device_mac)
         self.read_device_mac_button.grid(row=2, column=6, padx=5, pady=5, sticky=tk.W)
 
+        self.servo_frame = tk.Frame(self.root)
+        self.servo_frame.grid(row=4, column=0, padx=10, pady=10, sticky=tk.W)
+
+        self.angle_label = tk.Label(self.servo_frame, text="Enter servo angle:")
+        self.angle_label.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.angle_entry = tk.Entry(self.servo_frame)
+        self.angle_entry.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
+
+        self.duration_label = tk.Label(self.servo_frame, text="Enter pressing duration:")
+        self.duration_label.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.duration_entry = tk.Entry(self.servo_frame)
+        self.duration_entry.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
+
+        self.pressing_time_label = tk.Label(self.servo_frame, text="Enter pressing time:")
+        self.pressing_time_label.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.pressing_time_entry = tk.Entry(self.servo_frame)
+        self.pressing_time_entry.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
+
+        self.press_button = ttk.Button(self.servo_frame, text="Press Button", command=self.press_button)
+        self.press_button.grid(row=3, column=0, columnspan=2, padx=5, pady=5, sticky=tk.W)
+
         self.dmm_frame = tk.Frame(self.root)
         self.dmm_frame.grid(row=3, column=0, padx=10, pady=10, sticky=tk.W)
 
         self.upload_report_button = ttk.Button(self.dmm_frame, text="Upload Report", command=self.upload_report)
         self.upload_report_button.grid(row=4, column=0, padx=5, pady=5, sticky=tk.W)
 
-        # Servo Control
-        self.servo_frame = tk.Frame(self.root)
-        self.servo_frame.grid(row=4, column=0, padx=10, pady=10, sticky=tk.W)
-
-        self.angle_label = tk.Label(self.servo_frame, text="Enter Servo Angle:")
-        self.angle_label.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
-
-        self.angle_var = tk.IntVar()
-        self.angle_entry = ttk.Entry(self.servo_frame, textvariable=self.angle_var)
-        self.angle_entry.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
-
-        self.set_angle_button = ttk.Button(self.servo_frame, text="Set Angle", command=self.set_servo_angle)
-        self.set_angle_button.grid(row=0, column=2, padx=5, pady=5, sticky=tk.W)
-
-        # Add the new UI elements for pressing time and duration
-        self.time_label = tk.Label(self.servo_frame, text="Enter Pressing Time:")
-        self.time_label.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
-
-        self.time_var = tk.IntVar()
-        self.time_entry = ttk.Entry(self.servo_frame, textvariable=self.time_var)
-        self.time_entry.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
-
-        self.duration_label = tk.Label(self.servo_frame, text="Enter Pressing Duration:")
-        self.duration_label.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
-
-        self.duration_var = tk.DoubleVar()
-        self.duration_entry = ttk.Entry(self.servo_frame, textvariable=self.duration_var)
-        self.duration_entry.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
-
-        self.press_button = ttk.Button(self.servo_frame, text="Press Button", command=self.press_button)
-        self.press_button.grid(row=2, column=2, padx=5, pady=5, sticky=tk.W)
-
-    # Add this new method to handle pressing the button with the servo
     def press_button(self):
-        pressing_time = self.time_var.get()
-        button_angle = self.angle_var.get()
-        pressing_duration = self.duration_var.get()
+        angle = float(self.angle_entry.get())
+        pressing_duration = float(self.duration_entry.get())
+        pressing_time = int(self.pressing_time_entry.get())
 
         for i in range(pressing_time):
             print(f"Pressing button {i+1} time")
-            self.servo_controller.set_angle(button_angle)
+            self.servo_controller.set_angle(angle)
             time.sleep(pressing_duration)
             self.servo_controller.set_angle(0)
             time.sleep(0.5)
-        
 
-
-    # def create_text_widgets(self):
-    #     text_frame = ttk.Frame(self.root)
-    #     text_frame.grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
-
-    #     self.receive_text = scrolledtext.ScrolledText(text_frame, wrap=tk.WORD, state=tk.DISABLED, height=24, width=48)
-    #     self.receive_text.grid(row=2, column=0, columnspan=5, padx=5, pady=5, sticky=tk.W)
-
-    #     self.clear_button = ttk.Button(text_frame, text="Clear", command=self.clear_received_data)
-    #     self.clear_button.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
-
-    #     self.send_entry = ttk.Entry(text_frame, width=48)
-    #     self.send_entry.grid(row=4, column=0, columnspan=4, padx=5, pady=5, sticky=tk.W)
-
-    #     self.send_button = ttk.Button(text_frame, text="Send", command=lambda: self.sendEntry.send_entry_command(self.send_entry))
-    #     self.send_button.grid(row=4, column=4, padx=5, pady=5, sticky=tk.W)
-
-    # def clear_received_data(self):
-    #     self.receive_text.config(state=tk.NORMAL)
-    #     self.receive_text.delete(1.0, tk.END)
-    #     self.receive_text.config(state=tk.DISABLED)
-
-    # def log_message(self, message):
-    #     self.receive_text.config(state=tk.NORMAL)
-    #     self.receive_text.insert(tk.END, message + '\n')
-    #     self.receive_text.config(state=tk.DISABLED)
-    #     self.receive_text.see(tk.END)
-    
     def read_version_from_file(self, file_name):
         file_path = os.path.join(os.path.dirname(__file__), file_name)
         try:
@@ -341,3 +304,4 @@ if __name__ == "__main__":
     app = SerialCommunicationApp(root)
     root.protocol("WM_DELETE_WINDOW", app.on_exit)
     root.mainloop()
+
