@@ -6,6 +6,8 @@ from tkinter import messagebox
 from cryptography.fernet import Fernet
 import configparser
 import time
+from tkinter.filedialog import askopenfilename
+
 
 from components.settingWindow.settingWindow import SettingApp
 from components.toolsBar.toolsBar import ToolsBar
@@ -19,7 +21,8 @@ from components.dmmReader.ut61eplus import UT61EPLUS
 from components.adminLoginWindow.adminLoginWindow import AdminLoginApp
 from components.manualTest.manualTest import ManualTestApp
 from components.uploadReport import uploadReport
-from components.servoControl.servoControl import ServoController
+from components.loadTestScript.loadTestScript import LoadTestScript
+# from components.servoControl.servoControl import ServoController
 
 class SerialCommunicationApp:
     def __init__(self, root):
@@ -57,7 +60,7 @@ class SerialCommunicationApp:
         self.sendEntry = WriteDeviceInfo(self.send_command) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame)
         self.multimeter = Multimeter()
-        self.servo_controller = ServoController()
+        # self.servo_controller = ServoController()
 
     def refresh_dmm_devices(self):
         self.dmmReader.refresh_devices()
@@ -73,6 +76,11 @@ class SerialCommunicationApp:
 
     def flash_cert(self):
         self.flashCert.flash_cert(self.port_var)
+        
+    def load_test_script(self):
+        ini_file_path = askopenfilename(filetypes=[("INI Files", "*.ini")])
+        test_script_loader = LoadTestScript(ini_file_path)
+        test_script_loader.load_script()
 
     def open_serial_port(self):
         selected_port = self.port_var1.get()
@@ -108,6 +116,7 @@ class SerialCommunicationApp:
         tools_menu = tk.Menu(menubar, tearoff=0)
         tools_menu.add_command(label="Check Flash Tool", command=self.flash_tool_checking)
         tools_menu.add_command(label="Download List", command=self.download_list)
+        tools_menu.add_command(label="Load Test Script", command=self.load_test_script)
         self.manual_test_menu = tools_menu.add_command(label="Manual Test", command=self.manual_test)
         tools_menu.entryconfig("Manual Test", state=tk.DISABLED)  
         self.tools_menu = tools_menu  
