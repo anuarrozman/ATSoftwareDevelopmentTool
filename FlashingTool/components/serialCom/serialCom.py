@@ -2,8 +2,14 @@ import serial
 import serial.tools.list_ports
 from threading import Thread
 import tkinter as tk
+import logging
 
 from components.updateDB.updateDB import UpdateDB
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 class SerialCom:
     def __init__(self): #, receive_text):
         # self.receive_text = receive_text  
@@ -12,7 +18,7 @@ class SerialCom:
     def open_serial_port(self, selected_port, selected_baud):
         try:
             self.serial_port = serial.Serial(selected_port, baudrate=selected_baud, timeout=1)
-            print(f"Opened port {selected_port} at {selected_baud} baud")
+            logger.info(f"Opened port {selected_port} at {selected_baud} baud")
             
             # Store the selected port in the class variable
             self.selected_port = selected_port
@@ -21,17 +27,17 @@ class SerialCom:
             self.read_thread = Thread(target=self.read_serial_data)
             self.read_thread.start()
         except serial.SerialException as e:
-            print(f"Error: {e}")
+            logger.error(f"Error opening serial port: {e}")
 
     def close_serial_port(self):
         try:
             if self.serial_port and self.serial_port.is_open:
                 self.serial_port.close()
-                self.log_message("Closed port")
+                logger.debug("Closed port")
             else:
-                self.log_message("Port is not open.")
+                logger.debug("Port is not open.")
         except serial.SerialException as e:
-            self.log_message(f"Error closing serial port: {e}")
+            logger.debug(f"Error closing serial port: {e}")
             
     def read_serial_data(self):
         while self.serial_port.is_open:
@@ -40,31 +46,22 @@ class SerialCom:
                 decoded_data = raw_data.decode("utf-8", errors='replace').strip()
 
                 if decoded_data:
-                    self.receive_text.config(state=tk.NORMAL)
-                    self.receive_text.insert(tk.END, decoded_data + '\n')
-                    self.receive_text.config(state=tk.DISABLED)
-                    self.receive_text.see(tk.END)
+                    logger.debug(f"Received: {decoded_data}")
                     
                     if "." in decoded_data:
-                        print("Factory Mode")
+                        logger.debug("Entering Factory Mode")
                         self.send_data_auto()
                     
                     if "3:MAC? = " in decoded_data:
-                        # Extract MAC address from the received data
                         mac_address = decoded_data.split("=")[1].strip()
-                        # Store MAC address in the variable
                         self.mac_address_variable = mac_address
-                        print("MAC Address:", mac_address)
+                        logger.info(f"MAC Address: {mac_address}")
                         
                         self.update_db.update_database(self.mac_address_variable)
                         self.mac_address_variable = ""
 
             except UnicodeDecodeError as decode_error:
-                print(f"Error decoding data: {decode_error}")
-                self.receive_text.config(state=tk.NORMAL)
-                self.receive_text.insert(tk.END, f"Error decoding data: {decode_error}\n")
-                self.receive_text.config(state=tk.DISABLED)
-                self.receive_text.see(tk.END)
+                logger.error(f"Error decoding data: {decode_error}")
             except Exception as e:
                 pass
 
@@ -72,9 +69,7 @@ class SerialCom:
         auto_data = "polyaire&ADT\r\n"
         if self.serial_port.is_open:
             self.serial_port.write(auto_data.encode())
-            print(f"Auto-sent: {auto_data}")
+            logger.debug(f"Entering Password: {auto_data}")
         else:
-            print("Serial port not open.")
+            logger.debug("Serial port not open.")
 
-    def log_message(self, message):
-        print(message)  # Replace this with your preferred logging mechanism

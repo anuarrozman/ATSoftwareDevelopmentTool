@@ -6,6 +6,7 @@ from tkinter import messagebox
 from cryptography.fernet import Fernet
 import configparser
 import time
+import logging
 
 from components.settingWindow.settingWindow import SettingApp
 from components.toolsBar.toolsBar import ToolsBar
@@ -19,7 +20,7 @@ from components.dmmReader.ut61eplus import UT61EPLUS
 from components.adminLoginWindow.adminLoginWindow import AdminLoginApp
 from components.manualTest.manualTest import ManualTestApp
 from components.uploadReport import uploadReport
-from components.servoControl.servoControl import ServoController
+# from components.servoControl.servoControl import ServoController
 
 class SerialCommunicationApp:
     def __init__(self, root):
@@ -57,7 +58,7 @@ class SerialCommunicationApp:
         self.sendEntry = WriteDeviceInfo(self.send_command) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame)
         self.multimeter = Multimeter()
-        self.servo_controller = ServoController()
+        # self.servo_controller = ServoController()
 
     def refresh_dmm_devices(self):
         self.dmmReader.refresh_devices()
@@ -89,9 +90,9 @@ class SerialCommunicationApp:
     def send_command(self, command):
         if self.serialCom.serial_port and self.serialCom.serial_port.is_open:
             self.serialCom.serial_port.write(command.encode())
-            self.log_message(f"Sent: {command.strip()}")
+            logger.debug(f"Sent: {command.strip()}")
         else:
-            self.log_message("Port is not open. Please open the port before sending commands.")
+            logger.error("Port is not open. Please open the port before sending commands.")
 
     def create_menubar(self):
         menubar = tk.Menu(self.root)
@@ -126,7 +127,7 @@ class SerialCommunicationApp:
         if app.result:
             # Decrypt and verify the password
             decrypted_password = self.decrypt_password()
-            print("Decrypted Password:", decrypted_password)  # Debugging message
+            logger.debug("Decrypted Password: %s", decrypted_password)  # Debugging message
             if decrypted_password == "admin":  # Replace "admin" with the actual password if needed
                 messagebox.showinfo("Login Successful", "Admin login successful. Manual Test enabled.")
                 # Change the Manual Test from menubar state to Normal
@@ -152,7 +153,7 @@ class SerialCommunicationApp:
             decrypted_password = fernet.decrypt(encrypted_password).decode()
             return decrypted_password
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logger.error(f"An error occurred: {e}")
             return None
         
     def upload_report(self):
@@ -172,9 +173,9 @@ class SerialCommunicationApp:
         data = [combined_data]
 
         # Debugging: Print the data dictionary to verify its contents
-        print("Converted data:", data)
+        logger.debug("Converted data: %s", data)
         
-        api_url = "http://localhost:4000/api/endpoint"   # Replace with your actual API endpoint
+        api_url = "http://localhost:4000/api/endpoint"   # Replace with actual API endpoint
         
         response = uploadReport.post_report(api_url, data)
         
@@ -275,7 +276,7 @@ class SerialCommunicationApp:
         pressing_time = int(self.pressing_time_entry.get())
 
         for i in range(pressing_time):
-            print(f"Pressing button {i+1} time")
+            logger.info(f"Pressing button {i+1} time")
             self.servo_controller.set_angle(angle)
             time.sleep(pressing_duration)
             self.servo_controller.set_angle(0)
@@ -305,6 +306,8 @@ class SerialCommunicationApp:
 if __name__ == "__main__":
     root = tk.Tk()
     app = SerialCommunicationApp(root)
+    logging.basicConfig(level=logging.DEBUG,
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logger = logging.getLogger(__name__)
     root.protocol("WM_DELETE_WINDOW", app.on_exit)
     root.mainloop()
-

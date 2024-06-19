@@ -1,15 +1,16 @@
 import subprocess
 import tkinter as tk
 import os
+import logging
 
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class FlashFirmware:
-    
-    # def __init__(self, receive_text):
-    #     self.receive_text = receive_text
-    
-    def find_bin_path(self, keyword):
-        for root, dirs, files in os.walk("/"):
+
+    def find_bin_path(self, keyword, search_directory):
+        for root, dirs, files in os.walk(search_directory):
             for file in files:
                 if file.endswith(".bin") and keyword in file:
                     return os.path.join(root, file)
@@ -18,18 +19,21 @@ class FlashFirmware:
     def flash_firmware(self, port_var, baud_var):
         selected_port = port_var.get()
         selected_baud = baud_var.get()
-        
+
         # Define keywords for each bin file
         keywords = {
-            "boot_loader": "boot_loader",
-            "partition_table": "partition_table",
+            "boot_loader": "bootloader",
+            "partition_table": "partition-table",
             "ota_data_initial": "ota_data_initial",
-            "firmware": "adt_matter_project_A00000005_1_0_0-de1"
+            "firmware": "adt_matter_project_"
         }
 
+        # Define the directory to search in
+        search_directory = "/home/anuarrozman/s3-bucket"
+
         # Find paths for each bin file using keywords
-        bin_paths = {key: self.find_bin_path(keyword) for key, keyword in keywords.items()}
-        
+        bin_paths = {key: self.find_bin_path(keyword, search_directory) for key, keyword in keywords.items()}
+
         boot_loader_path = bin_paths["boot_loader"]
         partition_table_path = bin_paths["partition_table"]
         ota_data_initial_path = bin_paths["ota_data_initial"]
@@ -37,8 +41,9 @@ class FlashFirmware:
 
         # Check if all paths are valid
         if not all(bin_paths.values()):
-            print("Error: Unable to find one or more bin files")
-            self.log_message("Error: Unable to find one or more bin files")
+            # print("Error: Unable to find one or more bin files")
+            logger.error("Error: Unable to find one or more bin files")
+
             return
 
         # Run esptool.py command
@@ -48,19 +53,15 @@ class FlashFirmware:
             # Execute the command and capture output
             result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
             output = result.stdout
-            
+
             # Print output line by line
             for line in output.splitlines():
-                print(line)
+                # print(line)
+                logger.info(line)
                 if "Hard resetting via RTS pin" in line:
-                    self.receive_text.config(state=tk.NORMAL)
-                    self.receive_text.insert(tk.END, "Firmware Flashing Complete\n")
-                    self.receive_text.config(state=tk.DISABLED)
-                    self.receive_text.see(tk.END)
-                
+                    # print("Firmware Flashing Complete")
+                    logger.info("Firmware Flashing Complete")
+
         except subprocess.CalledProcessError as e:
             print(f"Error running esptool.py: {e}")
-            self.receive_text.config(state=tk.NORMAL)
-            self.receive_text.insert(tk.END, f"Error: {e}\n")
-            self.receive_text.config(state=tk.DISABLED)
-            self.receive_text.see(tk.END)
+            logger.error(f"Error running esptool.py: {e}")

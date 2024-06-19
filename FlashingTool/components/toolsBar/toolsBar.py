@@ -1,6 +1,11 @@
 import subprocess
 import mysql.connector
 import requests
+import logging
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class ToolsBar:
     def flash_tool_checking(self):
@@ -8,9 +13,12 @@ class ToolsBar:
         try:
             result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
             output = result.stdout
-            self.log_message(output)
+            # self.log_message(output)
+            logger.debug("esptool.py is installed.")
+            logger.debug(output)
         except subprocess.CalledProcessError as e:
-            self.log_message(f"Error running esptool.py: {e}")
+            # self.log_message(f"Error running esptool.py: {e}")
+            logger.error(f"Error running esptool.py: {e}")
             
     def download_list(self):
         url = "http://localhost:3000/devices"  # Correct endpoint
@@ -21,7 +29,8 @@ class ToolsBar:
             self.insert_data(data)
             self.display_data(data)
         except Exception as e:
-            self.log_message("Error downloading data: " + str(e))
+            # self.log_message("Error downloading data: " + str(e))
+            logger.error(f"Error downloading data: {e}")
     
     def create_table_if_not_exists(self):
         try:
@@ -42,9 +51,11 @@ class ToolsBar:
                 )
             """)
             conn.commit()
-            self.log_message("Ensured that the table device_info exists.")
+            # self.log_message("Ensured that the table device_info exists.")
+            logger.debug("Ensured that the table device_info exists.")
         except mysql.connector.Error as e:
-            self.log_message(f"Error creating table: {e}")
+            # self.log_message(f"Error creating table: {e}")
+            logger.error(f"Error creating table: {e}")
         finally:
             cursor.close()
             conn.close()
@@ -64,9 +75,11 @@ class ToolsBar:
                 mac_address = device.get("mac_address", "N/A")
                 cursor.execute("INSERT INTO device_info (matter_cert_id, serial_number, mac_address) VALUES (%s, %s, %s)", (matter_cert_id, serial_number, mac_address))
             conn.commit()
-            self.log_message("Data inserted successfully!")
+            # self.log_message("Data inserted successfully!")
+            logger.info("Data inserted successfully!")
         except mysql.connector.Error as e:
-            self.log_message(f"Error inserting data into database: {e}")
+            # self.log_message(f"Error inserting data into database: {e}")
+            logger.error(f"Error inserting data into database: {e}")
         finally:
             cursor.close()
             conn.close()
@@ -75,8 +88,8 @@ class ToolsBar:
         for device in data:
             matter_cert_id = device.get("matter_cert_id", "N/A")
             serial_number = device.get("serial_number", "N/A")  # Correct field name
-            self.log_message(f"Matter Cert ID: {matter_cert_id}, Serial: {serial_number}")
-        self.log_message("Data downloaded successfully!")
+            # self.log_message(f"Matter Cert ID: {matter_cert_id}, Serial: {serial_number}")
+            logger.info(f"Matter Cert ID: {matter_cert_id}, Serial: {serial_number}")
+        # self.log_message("Data downloaded successfully!")
+        logger.info("Data downloaded successfully!")
         
-    def log_message(self, message):
-        print(message)  # Replace this with your preferred logging mechanism

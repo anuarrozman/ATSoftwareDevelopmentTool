@@ -1,4 +1,9 @@
 import mysql.connector
+import logging
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class UpdateDB:
     
@@ -18,7 +23,7 @@ class UpdateDB:
             result = cursor.fetchone()
 
             if result:
-                print("MAC address already exists in the database.")
+                logger.debug(f"MAC address already exists in the database: {mac_address}")
             else:
                 # Insert the MAC address into the database if it doesn't exist
                 sql_query = """
@@ -27,13 +32,13 @@ class UpdateDB:
                             """
                 cursor.execute(sql_query, (mac_address,))
                 connection.commit()
-                print("MAC address inserted into the database.")
+                logger.info(f"MAC address inserted into the database: {mac_address}")
 
         except mysql.connector.Error as error:
-            print("Failed to update database:", error)
+            logger.error(f"Failed to update database: {error}")
 
         finally:
             if connection.is_connected():
                 cursor.close()
                 connection.close()
-                print("MySQL connection closed.")
+                logger.info("MySQL connection closed.")

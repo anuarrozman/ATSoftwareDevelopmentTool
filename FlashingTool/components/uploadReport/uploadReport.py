@@ -1,5 +1,10 @@
 # uploadReport.py
 import requests
+import logging
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 def post_report(api_url, data, headers=None):
     """
@@ -13,7 +18,9 @@ def post_report(api_url, data, headers=None):
     try:
         response = requests.post(api_url, json=data, headers=headers)
         response.raise_for_status()  # Raise an exception for HTTP errors
+        logger.info(f"Report successfully uploaded. Status code: {response.status_code}")
         return response
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
+        logger.error(f"An error occurred: {e}")
         return None
