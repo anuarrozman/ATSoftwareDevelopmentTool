@@ -1,0 +1,11 @@
+# Use official MariaDB image from Docker Hub
+FROM mariadb:latest
+
+# Optionally, set environment variables if needed
+ENV MYSQL_ROOT_PASSWORD=Matter2303!
+
+# Expose MySQL default port
+EXPOSE 3306
+
+# Start MariaDB service
+CMD ["mysqld"]
