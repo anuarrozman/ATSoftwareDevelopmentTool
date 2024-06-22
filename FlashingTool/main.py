@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox, filedialog
+from tkinter.filedialog import askopenfilename
 import serial.tools.list_ports
 import os
 from tkinter import messagebox
@@ -20,6 +21,7 @@ from components.dmmReader.ut61eplus import UT61EPLUS
 from components.adminLoginWindow.adminLoginWindow import AdminLoginApp
 from components.manualTest.manualTest import ManualTestApp
 from components.uploadReport import uploadReport
+from components.loadTestScript.loadTestScript import LoadTestScript
 # from components.servoControl.servoControl import ServoController
 
 class SerialCommunicationApp:
@@ -82,6 +84,16 @@ class SerialCommunicationApp:
 
     def close_serial_port(self):
         self.serialCom.close_serial_port()
+        
+    def load_test_script(self):
+        ini_file_path = askopenfilename(title="Select .ini file", filetypes=[("INI files", "*.ini")])
+        if not ini_file_path:
+            return
+        
+        self.loadtTestScript = LoadTestScript(ini_file_path)
+        with open(ini_file_path, 'r') as file:
+            content = file.read()
+            print(content)
 
     def get_device_mac(self):
         command = "FF:3;MAC?\r\n"
@@ -109,6 +121,7 @@ class SerialCommunicationApp:
         tools_menu = tk.Menu(menubar, tearoff=0)
         tools_menu.add_command(label="Check Flash Tool", command=self.flash_tool_checking)
         tools_menu.add_command(label="Download List", command=self.download_list)
+        tools_menu.add_command(label="Upload Test Script", command=self.load_test_script)
         self.manual_test_menu = tools_menu.add_command(label="Manual Test", command=self.manual_test)
         tools_menu.entryconfig("Manual Test", state=tk.DISABLED)  
         self.tools_menu = tools_menu  
