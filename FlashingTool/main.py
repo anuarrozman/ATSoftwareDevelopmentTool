@@ -105,6 +105,12 @@ class SerialCommunicationApp:
             logger.debug(f"Sent: {command.strip()}")
         else:
             logger.error("Port is not open. Please open the port before sending commands.")
+    
+    def send_serial_number(self):
+        self.sendEntry.send_serial_number_command()
+
+    def send_mqtr(self):
+        self.sendEntry.send_mtqr_command()
 
     def create_menubar(self):
         menubar = tk.Menu(self.root)
@@ -248,7 +254,22 @@ class SerialCommunicationApp:
         self.close_port_button.grid(row=1, column=5, padx=5, pady=5, sticky=tk.W)
 
         self.read_device_mac_button = ttk.Button(self.serial_baud_frame, text="Read Device MAC", command=self.get_device_mac)
-        self.read_device_mac_button.grid(row=2, column=6, padx=5, pady=5, sticky=tk.W)
+        self.read_device_mac_button.grid(row=1, column=6, padx=5, pady=5, sticky=tk.W)
+
+        self.write_device_serialnumber_button = ttk.Button(self.serial_baud_frame, text="Write S/N", command=self.send_serial_number)
+        self.write_device_serialnumber_button.grid(row=1, column=7, padx=5, pady=5, sticky=tk.W)
+
+        self.write_device_mtqr_button = ttk.Button(self.serial_baud_frame, text="Write MTQR", command=self.send_mqtr)
+        self.write_device_mtqr_button.grid(row=1, column=8, padx=5, pady=5, sticky=tk.W)
+
+        text_frame = tk.Frame(self.root)
+        text_frame.grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
+
+        self.send_entry_frame = ttk.Entry(text_frame, width=50)
+        self.send_entry_frame.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.send_button = ttk.Button(text_frame, text="Send", command=lambda: self.sendEntry.send_entry_command(self.send_entry_frame))
+        self.send_button.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
 
         self.servo_frame = tk.Frame(self.root)
         self.servo_frame.grid(row=4, column=0, padx=10, pady=10, sticky=tk.W)
