@@ -57,7 +57,8 @@ class SerialCom:
                         self.mac_address_variable = mac_address
                         logger.info(f"MAC Address: {mac_address}")
                         
-                        self.update_db.update_database(self.mac_address_variable)
+                        # self.update_db.update_database(self.mac_address_variable)
+                        self.update_db.update_text_file(self.mac_address_variable)
                         self.mac_address_variable = ""
 
             except UnicodeDecodeError as decode_error:

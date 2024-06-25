@@ -42,3 +42,38 @@ class UpdateDB:
                 cursor.close()
                 connection.close()
                 logger.info("MySQL connection closed.")
+
+    def update_text_file(self, mac_address):
+        try:
+            # Open the text file for reading and writing
+            with open('device_data.txt', 'r+') as file:
+                lines = file.readlines()
+                found = False
+                updated_lines = []
+
+                # Update the MAC address and status in the text file where status is 0
+                for line in lines:
+                    if 'MAC Address:' in line and 'Status: 0' in line:
+                        line_parts = line.split(',')
+                        line_parts[2] = f" MAC Address: {mac_address}"
+                        line_parts[4] = " Status: 1\n"
+                        updated_line = ','.join(line_parts)
+                        updated_lines.append(updated_line)
+                        found = True
+                    else:
+                        updated_lines.append(line)
+
+                # If no lines with Status: 0 were found, raise IOError
+                if not found:
+                    raise IOError("No lines with Status: 0 found in the text file.")
+
+                # Write the updated lines back to the text file
+                file.seek(0)
+                file.writelines(updated_lines)
+                file.truncate()
+
+                logger.info(f"MAC address and status updated in the text file where status was 0: {mac_address}")
+
+        except IOError as error:
+            logger.error(f"Failed to update text file: {error}")
+            print(f"Error: {error}")
