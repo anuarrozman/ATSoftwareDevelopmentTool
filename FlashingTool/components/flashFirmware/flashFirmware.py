@@ -2,13 +2,22 @@ import subprocess
 import tkinter as tk
 import os
 import logging
+import io
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 class FlashFirmware:
-
+    
+    def __init__(self, status_label):
+        self.status_label = status_label
+        self.log_capture_string = io.StringIO()
+        self.ch = logging.StreamHandler(self.log_capture_string)
+        self.ch.setLevel(logging.INFO)
+        self.ch.setFormatter(logging.Formatter('%(message)s'))
+        logger.addHandler(self.ch)
+    
     def find_bin_path(self, keyword, search_directory):
         for root, dirs, files in os.walk(search_directory):
             for file in files:
@@ -41,27 +50,33 @@ class FlashFirmware:
 
         # Check if all paths are valid
         if not all(bin_paths.values()):
-            # print("Error: Unable to find one or more bin files")
             logger.error("Error: Unable to find one or more bin files")
-
             return
 
         # Run esptool.py command
         command = f"esptool.py -p {selected_port} -b {selected_baud} write_flash 0x0 {boot_loader_path} 0xc000 {partition_table_path} 0x1e000 {ota_data_initial_path} 0x200000 {fw_path}"
 
         try:
-            # Execute the command and capture output
-            result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
-            output = result.stdout
+            # Open subprocess with stdout redirected to PIPE
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
-            # Print output line by line
-            for line in output.splitlines():
-                # print(line)
-                logger.info(line)
+            # Read stdout line by line and log in real-time
+            for line in iter(process.stdout.readline, ''):
+                logger.info(line.strip())
                 if "Hard resetting via RTS pin" in line:
-                    # print("Firmware Flashing Complete")
                     logger.info("Firmware Flashing Complete")
+                    self.get_flashing_status()
+
+            process.stdout.close()
+            process.wait()  # Wait for the process to finish
 
         except subprocess.CalledProcessError as e:
-            print(f"Error running esptool.py: {e}")
             logger.error(f"Error running esptool.py: {e}")
+            
+    def get_flashing_status(self):
+        self.ch.flush()
+        log_contents = self.log_capture_string.getvalue()
+        if "Firmware Flashing Complete" in log_contents:
+            self.status_label.config(text="Completed")
+        else:
+            self.status_label.config(text="Failed")

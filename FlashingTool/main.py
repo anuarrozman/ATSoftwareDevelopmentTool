@@ -54,8 +54,8 @@ class SerialCommunicationApp:
 
     def initialize_components(self):
         self.toolsBar = ToolsBar()
-        self.flashFw = FlashFirmware() #(self.receive_text)
-        self.flashCert = FlashCert() #(self.log_message)
+        self.flashFw = FlashFirmware(self.result_flashing_fw_label) #(self.receive_text)
+        self.flashCert = FlashCert(self.result_flashing_cert_label) #(self.log_message)
         self.serialCom = SerialCom() #(self.receive_text)
         self.sendEntry = WriteDeviceInfo(self.send_command) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame)
@@ -303,6 +303,39 @@ class SerialCommunicationApp:
 
         self.upload_report_button = ttk.Button(self.dmm_frame, text="Upload Report", command=self.upload_report)
         self.upload_report_button.grid(row=4, column=0, padx=5, pady=5, sticky=tk.W)
+        
+        self.status_frame = tk.Frame(self.root)
+        self.status_frame.grid(row=5, column=0, padx=10, pady=10, sticky=tk.W)
+        
+        self.status_flashing_fw = tk.Label(self.status_frame, text="Flashing Firmware: ")
+        self.status_flashing_fw.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
+        
+        self.result_flashing_fw_label = tk.Label(self.status_frame, text="")
+        self.result_flashing_fw_label.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
+        
+        self.status_flashing_cert = tk.Label(self.status_frame, text="Flashing Cert: ")
+        self.status_flashing_cert.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
+        
+        self.result_flashing_cert_label = tk.Label(self.status_frame, text="")
+        self.result_flashing_cert_label.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
+        
+        self.status_factory_mode = tk.Label(self.status_frame, text="Factory Mode: ")
+        self.status_factory_mode.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
+        
+        self.status_read_device_mac = tk.Label(self.status_frame, text="Read Device MAC: ")
+        self.status_read_device_mac.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
+        
+        self.status_write_device_sn = tk.Label(self.status_frame, text="Write Device S/N: ")
+        self.status_write_device_sn.grid(row=4, column=0, padx=5, pady=5, sticky=tk.W)
+        
+        self.status_write_device_mtqr = tk.Label(self.status_frame, text="Write Device MTQR: ")
+        self.status_write_device_mtqr.grid(row=5, column=0, padx=5, pady=5, sticky=tk.W)
+        
+        self.status_3_3v_test = tk.Label(self.status_frame, text="3.3V Test: ")
+        self.status_3_3v_test.grid(row=6, column=0, padx=5, pady=5, sticky=tk.W)
+        
+        self.status_5v_test = tk.Label(self.status_frame, text="5V Test: ")
+        self.status_5v_test.grid(row=7, column=0, padx=5, pady=5, sticky=tk.W)
 
     def press_button(self):
         angle = float(self.angle_entry.get())
