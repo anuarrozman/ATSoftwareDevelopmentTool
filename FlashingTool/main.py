@@ -68,8 +68,6 @@ class SerialCommunicationApp:
     def read_temp_aht20(self):
         ext_temp = self.aht20Sensor.read_temp_sensor()
         logger.debug(f"External Temperature: {ext_temp}")
-        atbeam_temp = self.get_atbeam_temp()
-        self.atbeam_sensor_temp_update(atbeam_temp, ext_temp)
 
     def get_atbeam_temp(self):
         command = "FF:3;sensorTemp?\r\n"
@@ -79,7 +77,7 @@ class SerialCommunicationApp:
         # Update GUI or perform any actions based on updated sensor_temp value
         logger.info(f"ATBeam Sensor Temperature: {sensor_temp}")
         # Example: Update a label or store in a variable for further use
-        self.status_atbeam_temp.config(text=f"Sensor Temp: ATBeam {sensor_temp} °C Ext {ext_temp} °C")
+        self.status_atbeam_temp.config(text=f"Sensor Temp: ATBeam {sensor_temp} °C Ext{ext_temp} °C")
 
     def read_humid_aht20(self):
         ext_humid = self.aht20Sensor.read_humid_sensor()
