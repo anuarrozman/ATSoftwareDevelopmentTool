@@ -22,6 +22,7 @@ from components.adminLoginWindow.adminLoginWindow import AdminLoginApp
 from components.manualTest.manualTest import ManualTestApp
 from components.uploadReport import uploadReport
 from components.loadTestScript.loadTestScript import LoadTestScript
+from components.aht20Sensor.aht20Sensor import SensorLogger
 # from components.servoControl.servoControl import ServoController
 
 class SerialCommunicationApp:
@@ -60,7 +61,11 @@ class SerialCommunicationApp:
         self.sendEntry = WriteDeviceInfo(self.send_command) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame)
         self.multimeter = Multimeter()
+        self.aht20Sensor = SensorLogger()
         # self.servo_controller = ServoController()
+
+    def read_aht20_sensor_data(self):
+        self.aht20Sensor.log_sensor_data()
 
     def refresh_dmm_devices(self):
         self.dmmReader.refresh_devices()
@@ -303,7 +308,11 @@ class SerialCommunicationApp:
 
         self.upload_report_button = ttk.Button(self.dmm_frame, text="Upload Report", command=self.upload_report)
         self.upload_report_button.grid(row=4, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.read_aht20_button = ttk.Button(self.dmm_frame, text="Read AHT20", command=self.read_aht20_sensor_data)
+        self.read_aht20_button.grid(row=4, column=1, padx=5, pady=5, sticky=tk.W)
         
+        # test check
         self.status_frame = tk.Frame(self.root)
         self.status_frame.grid(row=5, column=0, padx=10, pady=10, sticky=tk.W)
         
