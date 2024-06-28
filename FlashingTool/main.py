@@ -45,6 +45,9 @@ class SerialCommunicationApp:
         # Store reference to the Manual Test menu item
         self.manual_test_menu = None
 
+        self.ext_temp = 0
+        self.atbeam_temp = 0
+
     def initialize_gui(self):
         self.create_menubar()
         self.create_widgets()
