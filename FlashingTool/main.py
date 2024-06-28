@@ -68,6 +68,7 @@ class SerialCommunicationApp:
     def read_temp_aht20(self):
         ext_temp = self.aht20Sensor.read_temp_sensor()
         logger.debug(f"External Temperature: {ext_temp}")
+        self.get_atbeam_temp()
 
     def get_atbeam_temp(self):
         command = "FF:3;sensorTemp?\r\n"
