@@ -91,10 +91,10 @@ class SerialCommunicationApp:
                         logger.info(f"ATBeam Humidity: {atbeam_sensor}")
                         if ext_sensor == atbeam_sensor:
                             logger.info("Humidity matches")
-                            self.status_atbeam_sensor.config(text=f"Sensor Humidity: Humidity matches")
+                            self.status_atbeam_humidity.config(text=f"Sensor Humidity: Humidity matches")
                         else:
                             logger.error("Humidity does not match")
-                            self.status_atbeam_sensor.config(text=f"Sensor Humidity: Humidity does not match")
+                            self.status_atbeam_humidity.config(text=f"Sensor Humidity: Humidity does not match")
         except FileNotFoundError:
             logger.error("File not found")
 
@@ -397,6 +397,9 @@ class SerialCommunicationApp:
 
         self.status_atbeam_temp = tk.Label(self.status_frame, text="Sensor Temperature: ")
         self.status_atbeam_temp.grid(row=8, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.status_atbeam_humidity = tk.Label(self.status_frame, text="Sensor Humidity: ")
+        self.status_atbeam_humidity.grid(row=9, column=0, padx=5, pady=5, sticky=tk.W)
 
     def press_button(self):
         angle = float(self.angle_entry.get())
