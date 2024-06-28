@@ -70,9 +70,9 @@ class SerialCommunicationApp:
         logger.debug(f"External Temperature: {ext_sensor}")
         self.get_atbeam_temp()
         time.sleep(3)
-        self.compare_temp(ext_sensor, self.serialCom.sensor_temp_variable)
+        self.compare_sensor(ext_sensor, self.serialCom.sensor_temp_variable)
 
-    def compare_temp(self, ext_sensor, atbeam_temp):
+    def compare_sensor(self, ext_sensor, atbeam_temp):
         try:
             with open('sensor.txt', 'r') as file:
                 for line in file:
@@ -107,7 +107,7 @@ class SerialCommunicationApp:
         logger.debug(f"External Humidity: {ext_sensor}")
         self.get_atbeam_sensor()
         time.sleep(3)
-        self.compare_humid(ext_sensor, self.serialCom.sensor_humid_variable)
+        self.compare_sensor(ext_sensor, self.serialCom.sensor_humid_variable)
 
     def get_atbeam_sensor(self):
         command = "FF:3;sensorHumi?\r\n"
