@@ -56,6 +56,7 @@ class WriteDeviceInfo:
             self.update_status_in_text_file_serial_number(index, line)
         else:
             logger.error("Failed to send serial number command: Serial number not found")
+            self.status_label1.config(text="Failed")
 
     def get_mtqr_from_text_file(self):
         try:
