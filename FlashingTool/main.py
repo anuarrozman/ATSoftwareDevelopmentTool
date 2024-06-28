@@ -321,6 +321,12 @@ class SerialCommunicationApp:
         self.write_device_mtqr_button = ttk.Button(self.serial_baud_frame, text="Write MTQR", command=self.send_mqtr)
         self.write_device_mtqr_button.grid(row=1, column=8, padx=5, pady=5, sticky=tk.W)
 
+        self.read_atbeam_temp_button = ttk.Button(self.serial_baud_frame, text="Read ATBeam Temp", command=self.get_atbeam_temp)
+        self.read_atbeam_temp_button.grid(row=1, column=9, padx=5, pady=5, sticky=tk.W)
+
+        self.read_atbeam_humid_button = ttk.Button(self.serial_baud_frame, text="Read ATBeam Humid", command=self.get_atbeam_humid)
+        self.read_atbeam_humid_button.grid(row=1, column=10, padx=5, pady=5, sticky=tk.W)
+
         text_frame = tk.Frame(self.root)
         text_frame.grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
 
