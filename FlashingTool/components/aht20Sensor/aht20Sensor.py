@@ -1,11 +1,12 @@
 import aht20Sensor
-import datetime , time
+import datetime
+import time
 from AHT20 import AHT20
 
-aht20 = AHT20.AHT20()
+# Instantiate the AHT20 class correctly
+aht20 = AHT20()
 
-while 1:
-
+while True:
     # Fill a string with date, humidity and temperature
     data = str(datetime.datetime.now()) + ";" + "{:10.2f}".format(aht20.get_humidity()) + " %RH;" + "{:10.2f}".format(aht20.get_temperature()) + " °C"
     # Data with crc8 check
@@ -16,9 +17,8 @@ while 1:
     print("data with crc check: {0}".format(data_crc8))
 
     # Append in a file
-    log = open("log.txt", "a")
-    log.write(data + "\n")
-    log.close()
+    with open("log.txt", "a") as log:
+        log.write(data + "\n")
 
     # Wait
     time.sleep(2)
