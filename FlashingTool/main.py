@@ -75,8 +75,12 @@ class SerialCommunicationApp:
             with open('sensor.txt', 'r') as file:
                 for line in file:
                     if "ATBeam Temperature:" in line:
-                        temperature = line.split(":")[1].strip()
-                        logger.info(f"ATBeam Temperature: {temperature}")
+                        atbeam_temp = line.split(":")[1].strip()
+                        logger.info(f"ATBeam Temperature: {atbeam_temp}")
+                        if ext_temp == atbeam_temp:
+                            logger.info("Temperature matches")
+                        else:
+                            logger.error("Temperature does not match")
         except FileNotFoundError:
             logger.error("File not found")
 
