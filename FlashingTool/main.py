@@ -69,6 +69,7 @@ class SerialCommunicationApp:
         ext_temp = self.aht20Sensor.read_temp_sensor()
         logger.debug(f"External Temperature: {ext_temp}")
         self.get_atbeam_temp()
+        self.compare_temp(ext_temp, self.serialCom.sensor_temp_variable)
 
     def compare_temp(self, ext_temp, atbeam_temp):
         try:
@@ -79,8 +80,10 @@ class SerialCommunicationApp:
                         logger.info(f"ATBeam Temperature: {atbeam_temp}")
                         if ext_temp == atbeam_temp:
                             logger.info("Temperature matches")
+                            self.status_atbeam_temp.config(text=f"Sensor Temperature: Temperature matches")
                         else:
                             logger.error("Temperature does not match")
+                            self.status_atbeam_temp.config(text=f"Sensor Temperature: Temperature does not match")
         except FileNotFoundError:
             logger.error("File not found")
 
