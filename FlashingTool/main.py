@@ -70,6 +70,7 @@ class SerialCommunicationApp:
         atbeam_temp = self.get_atbeam_temp()
         logger.debug(f"Atbeam Temperature: {atbeam_temp}")
 
+
     def get_atbeam_temp(self):
         command = "FF:3;sensorTemp?\r\n"
         self.send_command(command)

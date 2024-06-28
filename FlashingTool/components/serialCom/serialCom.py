@@ -61,6 +61,10 @@ class SerialCom:
                         self.update_db.update_text_file(self.mac_address_variable)
                         self.mac_address_variable = ""
 
+                    if "3:sensorTemp? = " in decoded_data:
+                        sensor_temp = decoded_data.split("=")[1].strip()
+                        logger.info(f"Sensor Temperature: {sensor_temp} degrees Celsius")
+
             except UnicodeDecodeError as decode_error:
                 logger.error(f"Error decoding data: {decode_error}")
             except Exception as e:
