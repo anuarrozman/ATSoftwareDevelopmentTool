@@ -107,7 +107,7 @@ class SerialCommunicationApp:
         logger.debug(f"External Humidity: {ext_sensor}")
         self.get_atbeam_sensor()
         time.sleep(3)
-        self.compare_sensor(ext_sensor, self.serialCom.sensor_humid_variable)
+        self.compare_sensor(ext_sensor, self.serialCom.sensor_humi_variable)
 
     def get_atbeam_sensor(self):
         command = "FF:3;sensorHumi?\r\n"
