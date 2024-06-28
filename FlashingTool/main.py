@@ -59,7 +59,7 @@ class SerialCommunicationApp:
         self.flashCert = FlashCert(self.result_flashing_cert_label) #(self.log_message)
         self.serialCom = SerialCom(self.result_factory_mode_label) #self.atbeam_sensor_temp_update) #(self.receive_text)
         
-        self.sendEntry = WriteDeviceInfo(self.send_command) #, self.log_message)
+        self.sendEntry = WriteDeviceInfo(self.send_command, self.result_write_serialnumber, self.result_write_mtqr) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame)
         self.multimeter = Multimeter()
         self.aht20Sensor = SensorLogger()
@@ -402,9 +402,15 @@ class SerialCommunicationApp:
         
         self.status_write_device_sn = tk.Label(self.status_frame, text="Write Device S/N: ")
         self.status_write_device_sn.grid(row=4, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.result_write_serialnumber = tk.Label(self.status_frame, text="")
+        self.result_write_serialnumber.grid(row=4, column=1, padx=5, pady=5, sticky=tk.W)
         
         self.status_write_device_mtqr = tk.Label(self.status_frame, text="Write Device MTQR: ")
         self.status_write_device_mtqr.grid(row=5, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.result_write_mtqr = tk.Label(self.status_frame, text="")
+        self.result_write_mtqr.grid(row=5, column=1, padx=5, pady=5, sticky=tk.W)
         
         self.status_3_3v_test = tk.Label(self.status_frame, text="3.3V Test: ")
         self.status_3_3v_test.grid(row=6, column=0, padx=5, pady=5, sticky=tk.W)

@@ -5,8 +5,10 @@ logging.basicConfig(level=logging.DEBUG,
 logger = logging.getLogger(__name__)
 
 class WriteDeviceInfo:
-    def __init__(self, send_command):
+    def __init__(self, send_command, status_label1, status_label2):
         self.send_command = send_command
+        self.status_label1 = status_label1
+        self.status_label2 = status_label2
 
     def send_entry_command(self, send_entry):
         command = send_entry.get() + "\r\n"
@@ -38,8 +40,10 @@ class WriteDeviceInfo:
                 file.writelines(lines)
 
             logger.info(f"Updated status of line {index + 1} to 2.")
+            self.status_label1.config(text="Success")
         except IOError as e:
             logger.error(f"Error updating status in file: {e}")
+            self.status_label1.config(text="Failed")
 
     def send_serial_number_command(self):
         serial_number, index, line = self.get_serial_number_from_text_file()
@@ -77,8 +81,10 @@ class WriteDeviceInfo:
                 file.writelines(lines)
 
             logger.info(f"Updated status of line {index + 2} to 3.")
+            self.status_label2.config(text="Success")
         except IOError as e:
             logger.error(f"Error updating status in file: {e}")
+            self.status_label2.config(text="Failed")
 
     def send_mtqr_command(self):
         mtqr, index, line = self.get_mtqr_from_text_file()
