@@ -13,11 +13,10 @@ class SensorLogger:
     def read_temp_sensor(self):
         #  data = self.aht20.get_temperature()
          data_crc8 = "{:10.2f}".format(self.aht20.get_temperature()) + " °C"
-         logger.debug("Temperature: {0}".format(data_crc8))
          return data_crc8
 
     def read_humid_sensor(self):
         #  data = self.aht20.get_humidity()
          data_crc8 = "{:10.2f}".format(self.aht20.get_humidity()) + " %RH"
-         logger.debug("Humidity: {0}".format(data_crc8))
+         return data_crc8
 

@@ -67,13 +67,22 @@ class SerialCommunicationApp:
     def read_temp_aht20(self):
         ext_temp = self.aht20Sensor.read_temp_sensor()
         logger.debug(f"External Temperature: {ext_temp}")
+        atbeam_temp = self.get_atbeam_temp()
+        logger.debug(f"Atbeam Temperature: {atbeam_temp}")
 
     def get_atbeam_temp(self):
         command = "FF:3;sensorTemp?\r\n"
         self.send_command(command)
 
     def read_humid_aht20(self):
-        self.aht20Sensor.read_humid_sensor()
+        ext_humid = self.aht20Sensor.read_humid_sensor()
+        logger.debug(f"External Humidity: {ext_humid}")
+        atbeam_humid = self.get_atbeam_humid()
+        logger.debug(f"Atbeam Humidity: {atbeam_humid}")
+
+    def get_atbeam_humid(self):
+        command = "FF:3;sensorHumi?\r\n"
+        self.send_command(command)
 
     def refresh_dmm_devices(self):
         self.dmmReader.refresh_devices()
