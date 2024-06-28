@@ -17,7 +17,7 @@ class FlashCert:
         try:
             with open('device_data.txt', 'r') as file:
                 for line in file:
-                    if 'Matter Cert ID:' in line:
+                    if 'Matter Cert ID:' in line and 'Status: None' in line:
                         certId = line.split('Matter Cert ID: ')[1].split(',')[0].strip()
                         return certId
                 self.log_message("No certId found in the text file.")
