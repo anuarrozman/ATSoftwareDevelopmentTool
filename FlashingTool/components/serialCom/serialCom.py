@@ -70,7 +70,7 @@ class SerialCom:
                         self.sensor_temp_variable = sensor_temp
                         logger.info(f"Sensor Temperature: {self.sensor_temp_variable} C")
                         with open("sensor.txt", "w") as file:
-                            file.write("ATBeam Temperature: ", self.sensor_temp_variable)
+                            file.write(f"ATBeam Temperature: {self.sensor_temp_variable}\n")
 
             except UnicodeDecodeError as decode_error:
                 logger.error(f"Error decoding data: {decode_error}")
