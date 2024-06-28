@@ -64,8 +64,11 @@ class SerialCommunicationApp:
         self.aht20Sensor = SensorLogger()
         # self.servo_controller = ServoController()
 
-    def read_aht20_sensor_data(self):
+    def read_temp_aht20(self):
         self.aht20Sensor.read_temp_sensor()
+
+    def read_humid_aht20(self):
+        self.aht20Sensor.read_humid_sensor()
 
     def refresh_dmm_devices(self):
         self.dmmReader.refresh_devices()
@@ -309,8 +312,11 @@ class SerialCommunicationApp:
         self.upload_report_button = ttk.Button(self.dmm_frame, text="Upload Report", command=self.upload_report)
         self.upload_report_button.grid(row=4, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.read_aht20_button = ttk.Button(self.dmm_frame, text="Read AHT20", command=self.read_aht20_sensor_data)
-        self.read_aht20_button.grid(row=4, column=1, padx=5, pady=5, sticky=tk.W)
+        self.read_temp_aht20_button = ttk.Button(self.dmm_frame, text="Read Temperature Sensor", command=self.read_temp_aht20)
+        self.read_temp_aht20_button.grid(row=4, column=1, padx=5, pady=5, sticky=tk.W)
+
+        self.read_humid_aht20_button = ttk.Button(self.dmm_frame, text="Read Humidity Sensor", command=self.read_humid_aht20)
+        self.read_humid_aht20_button.grid(row=4, column=2, padx=5, pady=5, sticky=tk.W)
         
         # test check
         self.status_frame = tk.Frame(self.root)
