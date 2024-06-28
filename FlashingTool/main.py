@@ -68,8 +68,8 @@ class SerialCommunicationApp:
     def read_temp_aht20(self):
         ext_sensor = self.aht20Sensor.read_temp_sensor()
         logger.debug(f"External Temperature: {ext_sensor}")
-        self.get_atbeam_temp()
-        time.sleep(3)
+        # self.get_atbeam_temp()
+        # time.sleep(3)
         self.compare_temp(ext_sensor, self.serialCom.sensor_temp_variable)
 
     def get_atbeam_temp(self):
@@ -79,11 +79,11 @@ class SerialCommunicationApp:
     def read_humid_aht20(self):
         ext_sensor = self.aht20Sensor.read_humid_sensor()
         logger.debug(f"External Humidity: {ext_sensor}")
-        self.get_atbeam_sensor()
-        time.sleep(3)
+        # self.get_atbeam_humid()
+        # time.sleep(3)
         self.compare_humid(ext_sensor, self.serialCom.sensor_humid_variable)
 
-    def get_atbeam_sensor(self):
+    def get_atbeam_humid(self):
         command = "FF:3;sensorHumi?\r\n"
         self.send_command(command)
 
@@ -140,6 +140,8 @@ class SerialCommunicationApp:
         selected_port = self.port_var1.get()
         selected_baud = int(self.baud_var1.get())
         self.serialCom.open_serial_port(selected_port, selected_baud)
+        self.get_atbeam_temp()
+        self.get_atbeam_humid()
 
     def close_serial_port(self):
         self.serialCom.close_serial_port()
