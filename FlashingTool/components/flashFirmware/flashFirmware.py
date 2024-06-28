@@ -38,7 +38,7 @@ class FlashFirmware:
         }
 
         # Define the directory to search in
-        search_directory = "/home/anuarrozman/s3-bucket"
+        search_directory = "/usr/src/app/" # "/home/anuarrozman/s3-bucket"
 
         # Find paths for each bin file using keywords
         bin_paths = {key: self.find_bin_path(keyword, search_directory) for key, keyword in keywords.items()}
