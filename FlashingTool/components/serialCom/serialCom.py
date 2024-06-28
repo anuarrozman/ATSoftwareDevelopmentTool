@@ -2,6 +2,7 @@ import serial
 import logging
 from threading import Thread
 from components.updateDB.updateDB import UpdateDB
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,7 @@ class SerialCom:
                 if decoded_data:
                     logger.debug(f"Received: {decoded_data}")
                     
-                    if "." in decoded_data:
+                    if re.fullmatch(r'\.', decoded_data):
                         self.send_data_auto()
                     
                     if "3:MAC? = " in decoded_data:
