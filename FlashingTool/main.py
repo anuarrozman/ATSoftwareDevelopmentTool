@@ -57,7 +57,7 @@ class SerialCommunicationApp:
         self.toolsBar = ToolsBar()
         self.flashFw = FlashFirmware(self.result_flashing_fw_label) #(self.receive_text)
         self.flashCert = FlashCert(self.result_flashing_cert_label) #(self.log_message)
-        self.serialCom = SerialCom() #self.atbeam_sensor_temp_update) #(self.receive_text)
+        self.serialCom = SerialCom(self.result_factory_mode_label) #self.atbeam_sensor_temp_update) #(self.receive_text)
         
         self.sendEntry = WriteDeviceInfo(self.send_command) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame)
@@ -69,7 +69,7 @@ class SerialCommunicationApp:
         ext_sensor = self.aht20Sensor.read_temp_sensor()
         logger.debug(f"External Temperature: {ext_sensor}")
         self.get_atbeam_temp()
-        time.sleep(3)
+        time.sleep(2)
         self.compare_temp(ext_sensor, self.serialCom.sensor_temp_variable)
 
     def get_atbeam_temp(self):
@@ -80,7 +80,7 @@ class SerialCommunicationApp:
         ext_sensor = self.aht20Sensor.read_humid_sensor()
         logger.debug(f"External Humidity: {ext_sensor}")
         self.get_atbeam_sensor()
-        time.sleep(3)
+        time.sleep(2)
         self.compare_humid(ext_sensor, self.serialCom.sensor_humid_variable)
 
     def get_atbeam_sensor(self):
@@ -387,6 +387,9 @@ class SerialCommunicationApp:
         
         self.status_factory_mode = tk.Label(self.status_frame, text="Factory Mode: ")
         self.status_factory_mode.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.result_factory_mode_label = tk.Label(self.status_frame, text="")
+        self.result_factory_mode_label.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
         
         self.status_read_device_mac = tk.Label(self.status_frame, text="Read Device MAC: ")
         self.status_read_device_mac.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
