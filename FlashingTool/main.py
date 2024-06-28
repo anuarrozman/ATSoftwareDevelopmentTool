@@ -65,7 +65,7 @@ class SerialCommunicationApp:
         # self.servo_controller = ServoController()
 
     def read_aht20_sensor_data(self):
-        self.aht20Sensor.log_sensor_data()
+        self.aht20Sensor.read_temp_sensor()
 
     def refresh_dmm_devices(self):
         self.dmmReader.refresh_devices()

@@ -21,3 +21,7 @@ class SensorLogger:
             with open("log.txt", "a") as log:
                 log.write(data + "\n")
 
+    def read_temp_sensor(self):
+         data = self.aht20.get_temperature()
+         print("Temperature: {0}".format(data))
+
