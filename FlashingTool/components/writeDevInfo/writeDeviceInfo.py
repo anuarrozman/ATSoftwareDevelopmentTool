@@ -41,10 +41,8 @@ class WriteDeviceInfo:
                 file.writelines(lines)
 
             logger.info(f"Updated status of line {index + 1} to 2.")
-            self.status_label1.config(text="Success")
         except IOError as e:
             logger.error(f"Error updating status in file: {e}")
-            self.status_label1.config(text="Failed")
 
     def send_serial_number_command(self):
         serial_number, index, line = self.get_serial_number_from_text_file()
@@ -54,6 +52,7 @@ class WriteDeviceInfo:
             self.send_command(command)
             logger.info(f"Sent serial number command: {command}")
             self.update_status_in_text_file_serial_number(index, line)
+            self.status_label1.config(text="Success")
         else:
             logger.error("Failed to send serial number command: Serial number not found")
             self.status_label1.config(text="Failed")
@@ -83,10 +82,8 @@ class WriteDeviceInfo:
                 file.writelines(lines)
 
             logger.info(f"Updated status of line {index + 1} to 3.")
-            self.status_label2.config(text="Success")
         except IOError as e:
             logger.error(f"Error updating status in file: {e}")
-            self.status_label2.config(text="Failed")
 
     def send_mtqr_command(self):
         mtqr, index, line = self.get_mtqr_from_text_file()
@@ -96,8 +93,10 @@ class WriteDeviceInfo:
             self.send_command(command)
             logger.info(f"Sent MTQR command: {command}")
             self.update_status_in_text_file_mtqr(index, line)
+            self.status_label2.config(text="Success")
         else:
             logger.error("Failed to send MTQR command: MTQR not found")
+            self.status_label2.config(text="Failed")
 
 # Assuming send_command is a function that sends a command to the device
 def send_command(command):
