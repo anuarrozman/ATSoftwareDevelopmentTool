@@ -69,6 +69,8 @@ class SerialCommunicationApp:
         ext_temp = self.aht20Sensor.read_temp_sensor()
         logger.debug(f"External Temperature: {ext_temp}")
         self.get_atbeam_temp()
+        sensor_temp = SerialCom.get_sensor_temp_variable()
+        logger.debug(f"Atbeam Temperature: {sensor_temp}")
         
     def atbeam_sensor_temp_update(self, sensor_temp):
         # Example: Update a label or store in a variable for further use
@@ -370,7 +372,7 @@ class SerialCommunicationApp:
         self.status_5v_test = tk.Label(self.status_frame, text="5V Test: ")
         self.status_5v_test.grid(row=7, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.status_atbeam_temp = tk.Label(self.status_frame, text="Atbeam Temperature: ")
+        self.status_atbeam_temp = tk.Label(self.status_frame, text="Sensor Temperature: ")
         self.status_atbeam_temp.grid(row=8, column=0, padx=5, pady=5, sticky=tk.W)
 
     def press_button(self):
