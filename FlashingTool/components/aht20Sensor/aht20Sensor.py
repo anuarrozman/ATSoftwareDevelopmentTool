@@ -8,7 +8,6 @@ class SensorLogger:
         self.aht20 = AHT20.AHT20()
 
     def log_sensor_data(self):
-        while True:
             # Fill a string with date, humidity and temperature
             data = str(datetime.datetime.now()) + ";" + "{:10.2f}".format(self.aht20.get_humidity()) + " %RH;" + "{:10.2f}".format(self.aht20.get_temperature()) + " °C"
             # Data with crc8 check
@@ -22,5 +21,3 @@ class SensorLogger:
             with open("log.txt", "a") as log:
                 log.write(data + "\n")
 
-            # Wait
-            time.sleep(2)
