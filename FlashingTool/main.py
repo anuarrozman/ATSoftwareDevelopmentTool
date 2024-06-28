@@ -70,15 +70,21 @@ class SerialCommunicationApp:
         logger.debug(f"External Temperature: {ext_temp}")
         self.get_atbeam_temp()
 
-    def get_atbeam_temp(self):
-        command = "FF:3;sensorTemp?\r\n"
-        self.send_command(command)
-
     def atbeam_sensor_temp_update(self, sensor_temp, ext_temp):
         # Update GUI or perform any actions based on updated sensor_temp value
         logger.info(f"ATBeam Sensor Temperature: {sensor_temp}")
+        if ext_temp > sensor_temp:
+            logger.info("External temperature is higher than sensor temperature")
+        elif ext_temp < sensor_temp:
+            logger.info("External temperature is lower than sensor temperature")
+        else:
+            logger.info("External temperature is equal to sensor temperature")
         # Example: Update a label or store in a variable for further use
-        self.status_atbeam_temp.config(text=f"Sensor Temp: ATBeam {sensor_temp} °C Ext{ext_temp} °C")
+        self.status_atbeam_temp.config(text=f"ATBeam {sensor_temp} °C")
+
+    def get_atbeam_temp(self):
+        command = "FF:3;sensorTemp?\r\n"
+        self.send_command(command)
 
     def read_humid_aht20(self):
         ext_humid = self.aht20Sensor.read_humid_sensor()
