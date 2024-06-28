@@ -88,6 +88,7 @@ class SerialCommunicationApp:
         self.send_command(command)
 
     def compare_temp(self, ext_sensor, atbeam_temp):
+        # add more checking
         try:
             with open('sensor.txt', 'r') as file:
                 for line in file:
@@ -96,14 +97,15 @@ class SerialCommunicationApp:
                         logger.info(f"ATBeam Temperature: {atbeam_temp}")
                         if ext_sensor == atbeam_temp:
                             logger.info("Temperature matches")
-                            self.status_atbeam_temp.config(text=f"Sensor Temperature: Temperature matches")
+                            self.status_atbeam_temp.config(text=f"Sensor Temperature: Pass")
                         else:
                             logger.error("Temperature does not match")
-                            self.status_atbeam_temp.config(text=f"Sensor Temperature: Temperature does not match")
+                            self.status_atbeam_temp.config(text=f"Sensor Temperature: Failed")
         except FileNotFoundError:
             logger.error("File not found")
 
     def compare_humid(self, ext_sensor, atbeam_humid):
+        # add more checking
         try:
             with open('sensor.txt', 'r') as file:
                 for line in file:
@@ -112,10 +114,10 @@ class SerialCommunicationApp:
                         logger.info(f"ATBeam Humidity: {atbeam_humid}")
                         if ext_sensor == atbeam_humid:
                             logger.info("Humidity matches")
-                            self.status_atbeam_humidity.config(text=f"Sensor Humidity: Humidity matches")
+                            self.status_atbeam_humidity.config(text=f"Sensor Humidity: Pass")
                         else:
                             logger.error("Humidity does not match")
-                            self.status_atbeam_humidity.config(text=f"Sensor Humidity: Humidity does not match")
+                            self.status_atbeam_humidity.config(text=f"Sensor Humidity: Failed")
         except FileNotFoundError:
             logger.error("File not found")
 
