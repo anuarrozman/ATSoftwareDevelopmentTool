@@ -343,7 +343,7 @@ class SerialCommunicationApp:
         self.upload_report_button = ttk.Button(self.dmm_frame, text="Upload Report", command=self.upload_report)
         self.upload_report_button.grid(row=4, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.read_temp_aht20_button = ttk.Button(self.dmm_frame, text="Read Temperature Sensor", command=self.compare_temp)
+        self.read_temp_aht20_button = ttk.Button(self.dmm_frame, text="Read Temperature Sensor", command=self.compare_temp(self.ext_temp, self.atbeam_temp))
         self.read_temp_aht20_button.grid(row=4, column=1, padx=5, pady=5, sticky=tk.W)
 
         self.read_humid_aht20_button = ttk.Button(self.dmm_frame, text="Read Humidity Sensor", command=self.read_humid_aht20)
