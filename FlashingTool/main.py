@@ -402,7 +402,7 @@ class SerialCommunicationApp:
         self.status_read_device_mac = tk.Label(self.status_frame, text="Read Device MAC: ")
         self.status_read_device_mac.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.result_read_device_mac = tk.Label(self.status_frame, text="Failed")
+        self.result_read_device_mac = tk.Label(self.status_frame, text="")
         self.result_read_device_mac.grid(row=3, column=1, padx=5, pady=5, sticky=tk.W)
         
         self.status_write_device_sn = tk.Label(self.status_frame, text="Write Device S/N: ")
