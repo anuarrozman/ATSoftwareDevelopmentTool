@@ -51,6 +51,9 @@ class SerialCom:
                     if "3:sensorTemp? = " in decoded_data:
                         self.process_sensor_temperature(decoded_data)
 
+                    if "3:sensorHumi? = " in decoded_data:
+                        self.process_sensor_humidity(decoded_data)
+
             except UnicodeDecodeError as decode_error:
                 logger.error(f"Error decoding data: {decode_error}")
             except Exception as e:
@@ -68,9 +71,15 @@ class SerialCom:
         sensor_temp = decoded_data.split("=")[1].strip()
         self.sensor_temp_variable = sensor_temp
         logger.info(f"Sensor Temperature: {self.sensor_temp_variable} C")
-        self.save_sensor_temp_variable()
+        self.save_sensor_variable()
 
-    def save_sensor_temp_variable(self):
+    def process_sensor_humidity(self, decoded_data):
+        sensor_humi = decoded_data.split("=")[1].strip()
+        self.sensor_humi_variable = sensor_humi
+        logger.info(f"Sensor Humidity: {self.sensor_humi_variable} %")
+        self.save_sensor_variable()
+
+    def save_sensor_variable(self):
         try:
             with open('sensor.txt', 'w') as file:
                 file.write(f"ATBeam Temperature: {self.sensor_temp_variable}\n")
