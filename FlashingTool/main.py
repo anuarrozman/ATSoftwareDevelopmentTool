@@ -57,7 +57,7 @@ class SerialCommunicationApp:
         self.toolsBar = ToolsBar()
         self.flashFw = FlashFirmware(self.result_flashing_fw_label) #(self.receive_text)
         self.flashCert = FlashCert(self.result_flashing_cert_label) #(self.log_message)
-        self.serialCom = SerialCom(self.atbeam_sensor_temp_update) #(self.receive_text)
+        self.serialCom = SerialCom() #self.atbeam_sensor_temp_update) #(self.receive_text)
         
         self.sendEntry = WriteDeviceInfo(self.send_command) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame)
@@ -69,12 +69,12 @@ class SerialCommunicationApp:
         ext_temp = self.aht20Sensor.read_temp_sensor()
         logger.debug(f"External Temperature: {ext_temp}")
         self.get_atbeam_temp()
-        sensor_temp = SerialCom.get_sensor_temp_variable(self=SerialCom)
-        logger.debug(f"Atbeam Temperature: {sensor_temp}")
+        sensor_temp = self.serialCom.get_sensor_temp_variable()
+        logger.debug(f"Sensor Temperature: {sensor_temp}")
         
-    def atbeam_sensor_temp_update(self, sensor_temp):
-        # Example: Update a label or store in a variable for further use
-        self.status_atbeam_temp.config(text=f"Sensor Temp: {sensor_temp} C")
+    # def atbeam_sensor_temp_update(self, sensor_temp):
+    #     # Example: Update a label or store in a variable for further use
+    #     self.status_atbeam_temp.config(text=f"Sensor Temp: {sensor_temp} C")
 
     def get_atbeam_temp(self):
         command = "FF:3;sensorTemp?\r\n"

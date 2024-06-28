@@ -11,10 +11,10 @@ logging.basicConfig(level=logging.DEBUG,
 logger = logging.getLogger(__name__)
 
 class SerialCom:
-    def __init__(self, atbeam_sensor_temp_update): #, receive_text):
+    def __init__(self): #, atbeam_sensor_temp_update): #, receive_text):
         # self.receive_text = receive_text  
         self.update_db = UpdateDB()
-        self.atbeam_sensor_temp_update = atbeam_sensor_temp_update
+        # self.atbeam_sensor_temp_update = atbeam_sensor_temp_update
         self.sensor_temp_variable = None
     
     def open_serial_port(self, selected_port, selected_baud):
