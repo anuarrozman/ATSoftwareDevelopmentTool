@@ -75,6 +75,7 @@ class SerialCom:
                 pass
 
     def get_sensor_temp_variable(self):
+        print(f"Sensor Temp: {self.sensor_temp_variable}")
         return self.sensor_temp_variable
 
     def send_data_auto(self):
