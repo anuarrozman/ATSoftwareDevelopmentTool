@@ -102,8 +102,18 @@ class SerialCom:
         if self.serial_port.is_open:
             self.serial_port.write(auto_data.encode())
             logger.debug(f"Sending automatic data: {auto_data}")
+            # read atbeam temp & humid
+            self.send_command("3:sensorTemp?\r\n")
+            self.send_command("3:sensorHumi?\r\n")
         else:
             logger.debug("Serial port not open.")
             self.status_label.config(text="Failed")
+
+    def send_command(self, command):
+        if self.serialCom.serial_port and self.serialCom.serial_port.is_open:
+            self.serialCom.serial_port.write(command.encode())
+            logger.debug(f"Sent: {command.strip()}")
+        else:
+            logger.error("Port is not open. Please open the port before sending commands.")
 
     

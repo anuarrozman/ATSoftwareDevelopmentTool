@@ -140,8 +140,6 @@ class SerialCommunicationApp:
         selected_port = self.port_var1.get()
         selected_baud = int(self.baud_var1.get())
         self.serialCom.open_serial_port(selected_port, selected_baud)
-        self.get_atbeam_temp()
-        self.get_atbeam_humid()
 
     def close_serial_port(self):
         self.serialCom.close_serial_port()
