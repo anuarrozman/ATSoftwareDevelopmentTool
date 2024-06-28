@@ -66,7 +66,7 @@ class SerialCom:
                     if "3:sensorTemp? = " in decoded_data:
                         sensor_temp = decoded_data.split("=")[1].strip()
                         self.sensor_temp_variable = sensor_temp
-                        logger.info(f"Sensor Temperature: {self.sensor_temp_variable} °C")
+                        logger.info(f"Sensor Temperature: {self.sensor_temp_variable} C")
                         self.atbeam_sensor_temp_update(self.sensor_temp_variable)  # Trigger event
                         
             except UnicodeDecodeError as decode_error:
