@@ -6,8 +6,10 @@ from components.updateDB.updateDB import UpdateDB
 logger = logging.getLogger(__name__)
 
 class SerialCom:
-    def __init__(self, status_label):
+    def __init__(self, status_label, status_label1, status_label2):
         self.status_label = status_label
+        self.status_label1 = status_label1
+        self.status_label2 = status_label2
         self.update_db = UpdateDB()
         self.sensor_temp_variable = None
         self.mac_address_variable = None
@@ -85,16 +87,20 @@ class SerialCom:
             with open('sensor.txt', 'w') as file:
                 file.write(f"ATBeam Temperature: {self.sensor_temp_variable}\n")
             logger.debug(f"Value '{self.sensor_temp_variable}' written to file 'sensor.txt'")
+            self.status_label1.config(text="{self.sensor_temp_variable} C")
         except Exception as e:
             logger.error(f"Error writing to file: {e}")
+            self.status_label1.config(text="Failed")
 
     def save_sensor_humid_variable(self):
         try:
             with open('sensor.txt', 'a') as file:
                 file.write(f"ATBeam Humidity: {self.sensor_humid_variable}\n")
             logger.debug(f"Value '{self.sensor_humid_variable}' written to file 'sensor.txt'")
+            self.status_label2.config(text="{self.sensor_humid_variable} %")
         except Exception as e:
             logger.error(f"Error writing to file: {e}")
+            self.status_label2.config(text="Failed")
 
     def send_data_auto(self):
         auto_data = "polyaire&ADT\r\n"

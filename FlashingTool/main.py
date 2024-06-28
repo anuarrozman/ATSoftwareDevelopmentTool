@@ -57,7 +57,7 @@ class SerialCommunicationApp:
         self.toolsBar = ToolsBar()
         self.flashFw = FlashFirmware(self.result_flashing_fw_label) #(self.receive_text)
         self.flashCert = FlashCert(self.result_flashing_cert_label) #(self.log_message)
-        self.serialCom = SerialCom(self.result_factory_mode_label) #self.atbeam_sensor_temp_update) #(self.receive_text)
+        self.serialCom = SerialCom(self.result_factory_mode_label, self.status_atbeam_temp, self.status_atbeam_humidity) #self.atbeam_sensor_temp_update) #(self.receive_text)
         
         self.sendEntry = WriteDeviceInfo(self.send_command, self.result_write_serialnumber, self.result_write_mtqr) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame)
