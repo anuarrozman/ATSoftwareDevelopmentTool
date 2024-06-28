@@ -65,7 +65,7 @@ class SerialCom:
                         sensor_temp = decoded_data.split("=")[1].strip()
                         self.sensor_temp_variable = sensor_temp
                         logger.info(f"Sensor Temperature: {self.sensor_temp_variable} C")
-                        # self.get_sensor_temp_variable()
+                        self.get_sensor_temp_variable()
 
             except UnicodeDecodeError as decode_error:
                 logger.error(f"Error decoding data: {decode_error}")
@@ -74,7 +74,12 @@ class SerialCom:
         
     def get_sensor_temp_variable(self):
         print(self.sensor_temp_variable)
-        return self.sensor_temp_variable
+        try:
+            with open('sensor.txt', 'w') as file:
+                file.write(f"ATBeam Temperature: {self.sensor_temp_variable}\n")
+            logger.debug(f"Value '{self.sensor_temp_variable}' written to file '{'sensor.txt'}'")
+        except Exception as e:
+            logger.error(f"Error writing to file: {e}")
 
     def send_data_auto(self):
         auto_data = "polyaire&ADT\r\n"
