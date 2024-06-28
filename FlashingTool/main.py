@@ -69,9 +69,10 @@ class SerialCommunicationApp:
         ext_temp = self.aht20Sensor.read_temp_sensor()
         logger.debug(f"External Temperature: {ext_temp}")
         self.get_atbeam_temp()
+        time.sleep(3)
+        self.compare_temp(ext_temp, self.serialCom.sensor_temp_variable)
 
     def compare_temp(self, ext_temp, atbeam_temp):
-        self.read_temp_aht20()
         try:
             with open('sensor.txt', 'r') as file:
                 for line in file:
@@ -343,7 +344,7 @@ class SerialCommunicationApp:
         self.upload_report_button = ttk.Button(self.dmm_frame, text="Upload Report", command=self.upload_report)
         self.upload_report_button.grid(row=4, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.read_temp_aht20_button = ttk.Button(self.dmm_frame, text="Read Temperature Sensor", command=self.compare_temp(self.ext_temp, self.atbeam_temp))
+        self.read_temp_aht20_button = ttk.Button(self.dmm_frame, text="Read Temperature Sensor", command=self.read_temp_aht20)
         self.read_temp_aht20_button.grid(row=4, column=1, padx=5, pady=5, sticky=tk.W)
 
         self.read_humid_aht20_button = ttk.Button(self.dmm_frame, text="Read Humidity Sensor", command=self.read_humid_aht20)

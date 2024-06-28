@@ -1,29 +1,23 @@
 import serial
-import serial.tools.list_ports
-from threading import Thread
-import tkinter as tk
 import logging
-
+from threading import Thread
 from components.updateDB.updateDB import UpdateDB
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 class SerialCom:
     def __init__(self):
         self.update_db = UpdateDB()
         self.sensor_temp_variable = None
+        self.mac_address_variable = None
+        self.serial_port = None
+        self.read_thread = None
     
     def open_serial_port(self, selected_port, selected_baud):
         try:
             self.serial_port = serial.Serial(selected_port, baudrate=selected_baud, timeout=1)
             logger.info(f"Opened port {selected_port} at {selected_baud} baud")
             
-            # Store the selected port in the class variable
-            self.selected_port = selected_port
-
-            # Start a thread to continuously read data from the serial port
             self.read_thread = Thread(target=self.read_serial_data)
             self.read_thread.start()
         except serial.SerialException as e:
@@ -49,35 +43,38 @@ class SerialCom:
                     logger.debug(f"Received: {decoded_data}")
                     
                     if "." in decoded_data:
-                        logger.debug("Entering Factory Mode")
                         self.send_data_auto()
                     
                     if "3:MAC? = " in decoded_data:
-                        mac_address = decoded_data.split("=")[1].strip()
-                        self.mac_address_variable = mac_address
-                        logger.info(f"MAC Address: {mac_address}")
+                        self.process_mac_address(decoded_data)
                         
-                        # self.update_db.update_database(self.mac_address_variable)
-                        self.update_db.update_text_file(self.mac_address_variable)
-                        self.mac_address_variable = ""
-
                     if "3:sensorTemp? = " in decoded_data:
-                        sensor_temp = decoded_data.split("=")[1].strip()
-                        self.sensor_temp_variable = sensor_temp
-                        logger.info(f"Sensor Temperature: {self.sensor_temp_variable} C")
-                        self.get_sensor_temp_variable()
+                        self.process_sensor_temperature(decoded_data)
 
             except UnicodeDecodeError as decode_error:
                 logger.error(f"Error decoding data: {decode_error}")
             except Exception as e:
-                pass
+                logger.error(f"Exception in read_serial_data: {e}")
         
-    def get_sensor_temp_variable(self):
-        print(self.sensor_temp_variable)
+    def process_mac_address(self, decoded_data):
+        mac_address = decoded_data.split("=")[1].strip()
+        self.mac_address_variable = mac_address
+        logger.info(f"MAC Address: {mac_address}")
+        
+        self.update_db.update_text_file(self.mac_address_variable)
+        self.mac_address_variable = ""
+
+    def process_sensor_temperature(self, decoded_data):
+        sensor_temp = decoded_data.split("=")[1].strip()
+        self.sensor_temp_variable = sensor_temp
+        logger.info(f"Sensor Temperature: {self.sensor_temp_variable} C")
+        self.save_sensor_temp_variable()
+
+    def save_sensor_temp_variable(self):
         try:
             with open('sensor.txt', 'w') as file:
                 file.write(f"ATBeam Temperature: {self.sensor_temp_variable}\n")
-            logger.debug(f"Value '{self.sensor_temp_variable}' written to file '{'sensor.txt'}'")
+            logger.debug(f"Value '{self.sensor_temp_variable}' written to file 'sensor.txt'")
         except Exception as e:
             logger.error(f"Error writing to file: {e}")
 
@@ -85,7 +82,6 @@ class SerialCom:
         auto_data = "polyaire&ADT\r\n"
         if self.serial_port.is_open:
             self.serial_port.write(auto_data.encode())
-            logger.debug(f"Entering Password: {auto_data}")
+            logger.debug(f"Sending automatic data: {auto_data}")
         else:
             logger.debug("Serial port not open.")
-
