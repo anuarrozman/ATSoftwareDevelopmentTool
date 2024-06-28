@@ -1,5 +1,6 @@
 import logging
 
+# Set up logging configuration
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -80,7 +81,7 @@ class WriteDeviceInfo:
             with open('device_data.txt', 'w') as file:
                 file.writelines(lines)
 
-            logger.info(f"Updated status of line {index + 2} to 3.")
+            logger.info(f"Updated status of line {index + 1} to 3.")
             self.status_label2.config(text="Success")
         except IOError as e:
             logger.error(f"Error updating status in file: {e}")
