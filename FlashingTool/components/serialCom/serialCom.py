@@ -110,8 +110,8 @@ class SerialCom:
             self.status_label.config(text="Failed")
 
     def send_command(self, command):
-        if self.serialCom.serial_port and self.serialCom.serial_port.is_open:
-            self.serialCom.serial_port.write(command.encode())
+        if self.serial_port and self.serial_port.is_open:
+            self.serial_port.write(command.encode())
             logger.debug(f"Sent: {command.strip()}")
         else:
             logger.error("Port is not open. Please open the port before sending commands.")
