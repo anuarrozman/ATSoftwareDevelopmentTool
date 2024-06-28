@@ -65,19 +65,20 @@ class SerialCommunicationApp:
         self.aht20Sensor = SensorLogger()
         # self.servo_controller = ServoController()
 
-    # Method to retrieve sensor temperature from SerialCom
-    def get_sensor_temperature(self):
-        return self.serialCom.get_sensor_temp_variable()
-
     def read_temp_aht20(self):
         ext_temp = self.aht20Sensor.read_temp_sensor()
         logger.debug(f"External Temperature: {ext_temp}")
         self.get_atbeam_temp()
-        self.get_sensor_temperature()
 
     def get_atbeam_temp(self):
         command = "FF:3;sensorTemp?\r\n"
         self.send_command(command)
+        with open("sensor.txt", "r") as file:
+            for line in file:
+                if "ATBeam Temperature" in line:
+                    value = line.split(":")[1].strip()
+                    print(value)
+        return None
 
     def read_humid_aht20(self):
         ext_humid = self.aht20Sensor.read_humid_sensor()
