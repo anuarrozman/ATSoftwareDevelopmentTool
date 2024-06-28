@@ -86,7 +86,7 @@ class SerialCommunicationApp:
                             logger.error("Temperature does not match")
                             self.status_atbeam_temp.config(text=f"Sensor Temperature: Temperature does not match")
                     
-                    if "ATBeam Humidity:" in line:
+                    elif "ATBeam Humidity:" in line:
                         atbeam_sensor = line.split(":")[1].strip()
                         logger.info(f"ATBeam Humidity: {atbeam_sensor}")
                         if ext_sensor == atbeam_sensor:
@@ -435,6 +435,11 @@ class SerialCommunicationApp:
         self.close_serial_port()
 
 if __name__ == "__main__":
+    # Delete "sensor.txt" file during boot up
+    sensor_file = "sensor.txt"
+    if os.path.exists(sensor_file):
+        os.remove(sensor_file)
+        
     root = tk.Tk()
     app = SerialCommunicationApp(root)
     logging.basicConfig(level=logging.DEBUG,
