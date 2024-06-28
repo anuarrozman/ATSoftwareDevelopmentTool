@@ -23,6 +23,7 @@ from components.manualTest.manualTest import ManualTestApp
 from components.uploadReport import uploadReport
 from components.loadTestScript.loadTestScript import LoadTestScript
 from components.aht20Sensor.aht20Sensor import SensorLogger
+from components.updateDB.updateDB import UpdateDB
 # from components.servoControl.servoControl import ServoController
 
 class SerialCommunicationApp:
@@ -69,7 +70,7 @@ class SerialCommunicationApp:
         ext_sensor = self.aht20Sensor.read_temp_sensor()
         logger.debug(f"External Temperature: {ext_sensor}")
         self.get_atbeam_temp()
-        time.sleep(2)
+        time.sleep(3)
         self.compare_temp(ext_sensor, self.serialCom.sensor_temp_variable)
 
     def get_atbeam_temp(self):
@@ -80,7 +81,7 @@ class SerialCommunicationApp:
         ext_sensor = self.aht20Sensor.read_humid_sensor()
         logger.debug(f"External Humidity: {ext_sensor}")
         self.get_atbeam_sensor()
-        time.sleep(2)
+        time.sleep(3)
         self.compare_humid(ext_sensor, self.serialCom.sensor_humid_variable)
 
     def get_atbeam_sensor(self):
