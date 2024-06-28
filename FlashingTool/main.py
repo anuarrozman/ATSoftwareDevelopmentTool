@@ -70,9 +70,24 @@ class SerialCommunicationApp:
         logger.debug(f"External Temperature: {ext_sensor}")
         self.get_atbeam_temp()
         time.sleep(3)
-        self.compare_sensor(ext_sensor, self.serialCom.sensor_temp_variable)
+        self.compare_temp(ext_sensor, self.serialCom.sensor_temp_variable)
 
-    def compare_sensor(self, ext_sensor, atbeam_temp):
+    def get_atbeam_temp(self):
+        command = "FF:3;sensorTemp?\r\n"
+        self.send_command(command)
+
+    def read_humid_aht20(self):
+        ext_sensor = self.aht20Sensor.read_humid_sensor()
+        logger.debug(f"External Humidity: {ext_sensor}")
+        self.get_atbeam_sensor()
+        time.sleep(3)
+        self.compare_humid(ext_sensor, self.serialCom.sensor_humid_variable)
+
+    def get_atbeam_sensor(self):
+        command = "FF:3;sensorHumi?\r\n"
+        self.send_command(command)
+
+    def compare_temp(self, ext_sensor, atbeam_temp):
         try:
             with open('sensor.txt', 'r') as file:
                 for line in file:
@@ -85,11 +100,17 @@ class SerialCommunicationApp:
                         else:
                             logger.error("Temperature does not match")
                             self.status_atbeam_temp.config(text=f"Sensor Temperature: Temperature does not match")
-                    
-                    elif "ATBeam Humidity:" in line:
-                        atbeam_sensor = line.split(":")[1].strip()
-                        logger.info(f"ATBeam Humidity: {atbeam_sensor}")
-                        if ext_sensor == atbeam_sensor:
+        except FileNotFoundError:
+            logger.error("File not found")
+
+    def compare_humid(self, ext_sensor, atbeam_humid):
+        try:
+            with open('sensor.txt', 'r') as file:
+                for line in file:
+                    if "ATBeam Humidity:" in line:
+                        atbeam_humid = line.split(":")[1].strip()
+                        logger.info(f"ATBeam Humidity: {atbeam_humid}")
+                        if ext_sensor == atbeam_humid:
                             logger.info("Humidity matches")
                             self.status_atbeam_humidity.config(text=f"Sensor Humidity: Humidity matches")
                         else:
@@ -97,21 +118,6 @@ class SerialCommunicationApp:
                             self.status_atbeam_humidity.config(text=f"Sensor Humidity: Humidity does not match")
         except FileNotFoundError:
             logger.error("File not found")
-
-    def get_atbeam_temp(self):
-        command = "FF:3;sensorTemp?\r\n"
-        self.send_command(command)
-
-    def read_humid_aht20(self):
-        ext_sensor = self.aht20Sensor.read_humid_sensor()
-        logger.debug(f"External Humidity: {ext_sensor}")
-        self.get_atbeam_sensor()
-        time.sleep(3)
-        self.compare_sensor(ext_sensor, self.serialCom.sensor_humid_variable)
-
-    def get_atbeam_sensor(self):
-        command = "FF:3;sensorHumi?\r\n"
-        self.send_command(command)
 
     def refresh_dmm_devices(self):
         self.dmmReader.refresh_devices()
@@ -439,7 +445,7 @@ if __name__ == "__main__":
     sensor_file = "sensor.txt"
     if os.path.exists(sensor_file):
         os.remove(sensor_file)
-        
+
     root = tk.Tk()
     app = SerialCommunicationApp(root)
     logging.basicConfig(level=logging.DEBUG,
