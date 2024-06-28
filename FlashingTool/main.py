@@ -45,9 +45,6 @@ class SerialCommunicationApp:
         # Store reference to the Manual Test menu item
         self.manual_test_menu = None
 
-        self.ext_temp = 0
-        self.atbeam_temp = 0
-
     def initialize_gui(self):
         self.create_menubar()
         self.create_widgets()
@@ -68,7 +65,7 @@ class SerialCommunicationApp:
         # self.servo_controller = ServoController()
 
     def read_temp_aht20(self):
-        self.aht20Sensor.get_temperature() 
+        self.aht20Sensor.read_temp_sensor()
 
     def get_atbeam_temp(self):
         command = "FF:3;sensorTemp?\r\n"
