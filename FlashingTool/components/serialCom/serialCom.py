@@ -50,7 +50,7 @@ class SerialCom:
                         
                     if "3:sensorTemp? = " in decoded_data:
                         self.process_sensor_temperature(decoded_data)
-
+                    
                     if "3:sensorHumi? = " in decoded_data:
                         self.process_sensor_humidity(decoded_data)
 
@@ -71,19 +71,27 @@ class SerialCom:
         sensor_temp = decoded_data.split("=")[1].strip()
         self.sensor_temp_variable = sensor_temp
         logger.info(f"Sensor Temperature: {self.sensor_temp_variable} C")
-        self.save_sensor_variable()
+        self.save_sensor_temp_variable()
 
     def process_sensor_humidity(self, decoded_data):
-        sensor_humi = decoded_data.split("=")[1].strip()
-        self.sensor_humi_variable = sensor_humi
-        logger.info(f"Sensor Humidity: {self.sensor_humi_variable} %")
-        self.save_sensor_variable()
+        sensor_humid = decoded_data.split("=")[1].strip()
+        self.sensor_humid_variable = sensor_humid
+        logger.info(f"Sensor Humidity: {sensor_humid} %")
+        self.save_sensor_humid_variable()
 
-    def save_sensor_variable(self):
+    def save_sensor_temp_variable(self):
         try:
             with open('sensor.txt', 'w') as file:
                 file.write(f"ATBeam Temperature: {self.sensor_temp_variable}\n")
             logger.debug(f"Value '{self.sensor_temp_variable}' written to file 'sensor.txt'")
+        except Exception as e:
+            logger.error(f"Error writing to file: {e}")
+
+    def save_sensor_humid_variable(self):
+        try:
+            with open('sensor.txt', 'a') as file:
+                file.write(f"ATBeam Humidity: {self.sensor_humid_variable}\n")
+            logger.debug(f"Value '{self.sensor_humid_variable}' written to file 'sensor.txt'")
         except Exception as e:
             logger.error(f"Error writing to file: {e}")
 
@@ -94,3 +102,5 @@ class SerialCom:
             logger.debug(f"Sending automatic data: {auto_data}")
         else:
             logger.debug("Serial port not open.")
+
+    
