@@ -69,12 +69,16 @@ class SerialCommunicationApp:
         ext_temp = self.aht20Sensor.read_temp_sensor()
         logger.debug(f"External Temperature: {ext_temp}")
         self.get_atbeam_temp()
-        time.sleep(1)
-        with open('sensor.txt', 'r') as file:
-            for line in file:
-                if "ATBeam Temperature:" in line:
-                    temperature = line.split(":")[1].strip()
-                    logger.info(f"ATBeam Temperature: {temperature}")
+
+    def compare_temp(self, ext_temp, atbeam_temp):
+        try:
+            with open('sensor.txt', 'r') as file:
+                for line in file:
+                    if "ATBeam Temperature:" in line:
+                        temperature = line.split(":")[1].strip()
+                        logger.info(f"ATBeam Temperature: {temperature}")
+        except FileNotFoundError:
+            logger.error("File not found")
 
     def get_atbeam_temp(self):
         command = "FF:3;sensorTemp?\r\n"
