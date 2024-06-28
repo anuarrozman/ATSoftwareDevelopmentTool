@@ -23,6 +23,6 @@ class SensorLogger:
 
     def read_temp_sensor(self):
         #  data = self.aht20.get_temperature()
-         data_crc8 = self.aht20.get_temperature_crc8()
+         data_crc8 = "{:10.2f}".format(self.aht20.get_temperature()) + " °C"
          print("Temperature: {0}".format(data_crc8))
 
