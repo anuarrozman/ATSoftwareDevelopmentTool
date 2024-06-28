@@ -23,7 +23,6 @@ from components.manualTest.manualTest import ManualTestApp
 from components.uploadReport import uploadReport
 from components.loadTestScript.loadTestScript import LoadTestScript
 from components.aht20Sensor.aht20Sensor import SensorLogger
-from components.updateDB.updateDB import UpdateDB
 # from components.servoControl.servoControl import ServoController
 
 class SerialCommunicationApp:
@@ -64,7 +63,6 @@ class SerialCommunicationApp:
         self.dmmReader = DeviceSelectionApp(self.dmm_frame)
         self.multimeter = Multimeter()
         self.aht20Sensor = SensorLogger()
-        self.update_db = UpdateDB(self.result_read_device_mac_label)
         # self.servo_controller = ServoController()
 
     def read_temp_aht20(self):

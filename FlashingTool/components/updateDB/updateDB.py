@@ -6,9 +6,6 @@ logging.basicConfig(level=logging.DEBUG,
 logger = logging.getLogger(__name__)
 
 class UpdateDB:
-
-    def __init__(self, status_label):
-        self.status_label = status_label
     
     def update_database(self, mac_address):
         try:
@@ -75,10 +72,8 @@ class UpdateDB:
                 file.writelines(updated_lines)
                 file.truncate()
 
-                self.status_label.config(text=f"Success {mac_address}")
                 logger.info(f"MAC address and status updated in the text file where status was 0: {mac_address}")
 
         except IOError as error:
             logger.error(f"Failed to update text file: {error}")
-            self.status_label.config(text="Failed")
             print(f"Error: {error}")

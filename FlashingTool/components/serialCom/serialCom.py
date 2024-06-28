@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 class SerialCom:
     def __init__(self, status_label):
         self.status_label = status_label
-        self.update_db = UpdateDB(status_label=status_label)
+        self.update_db = UpdateDB()
         self.sensor_temp_variable = None
         self.mac_address_variable = None
         self.serial_port = None
