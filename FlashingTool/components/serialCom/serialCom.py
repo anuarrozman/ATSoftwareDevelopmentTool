@@ -86,8 +86,8 @@ class SerialCom:
         try:
             with open('sensor.txt', 'w') as file:
                 file.write(f"ATBeam Temperature: {self.sensor_temp_variable}\n")
+                self.status_label1.config(text=f"Sensor Temperature: {self.sensor_temp_variable} C")
             logger.debug(f"Value '{self.sensor_temp_variable}' written to file 'sensor.txt'")
-            self.status_label1.config(text="{self.sensor_temp_variable} C")
         except Exception as e:
             logger.error(f"Error writing to file: {e}")
             self.status_label1.config(text="Failed")
@@ -96,8 +96,8 @@ class SerialCom:
         try:
             with open('sensor.txt', 'a') as file:
                 file.write(f"ATBeam Humidity: {self.sensor_humid_variable}\n")
+                self.status_label2.config(text=f"Sensor Humidity: {self.sensor_humid_variable} %")
             logger.debug(f"Value '{self.sensor_humid_variable}' written to file 'sensor.txt'")
-            self.status_label2.config(text="{self.sensor_humid_variable} %")
         except Exception as e:
             logger.error(f"Error writing to file: {e}")
             self.status_label2.config(text="Failed")
