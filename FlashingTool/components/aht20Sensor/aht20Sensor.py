@@ -19,4 +19,3 @@ class SensorLogger:
         #  data = self.aht20.get_humidity()
          data_crc8 = "{:10.2f}".format(self.aht20.get_humidity()) + " %RH"
          return data_crc8
-

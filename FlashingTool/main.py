@@ -57,7 +57,8 @@ class SerialCommunicationApp:
         self.toolsBar = ToolsBar()
         self.flashFw = FlashFirmware(self.result_flashing_fw_label) #(self.receive_text)
         self.flashCert = FlashCert(self.result_flashing_cert_label) #(self.log_message)
-        self.serialCom = SerialCom() #(self.receive_text)
+        self.serialCom = SerialCom(self.atbeam_sensor_temp_update) #(self.receive_text)
+        
         self.sendEntry = WriteDeviceInfo(self.send_command) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame)
         self.multimeter = Multimeter()
@@ -67,9 +68,12 @@ class SerialCommunicationApp:
     def read_temp_aht20(self):
         ext_temp = self.aht20Sensor.read_temp_sensor()
         logger.debug(f"External Temperature: {ext_temp}")
-        atbeam_temp = self.get_atbeam_temp()
-        logger.debug(f"Atbeam Temperature: {atbeam_temp}")
-
+        
+    def atbeam_sensor_temp_update(self, sensor_temp):
+        # Update GUI or perform any actions based on updated sensor_temp value
+        logger.info(f"ATBeam Sensor Temperature: {sensor_temp}")
+        # Example: Update a label or store in a variable for further use
+        self.status_atbeam_temp.config(text=f"Sensor Temp: {sensor_temp} degrees Celsius")
 
     def get_atbeam_temp(self):
         command = "FF:3;sensorTemp?\r\n"
@@ -366,6 +370,9 @@ class SerialCommunicationApp:
         
         self.status_5v_test = tk.Label(self.status_frame, text="5V Test: ")
         self.status_5v_test.grid(row=7, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.status_atbeam_temp = tk.Label(self.status_frame, text="Atbeam Temperature: ")
+        self.status_atbeam_temp.grid(row=8, column=0, padx=5, pady=5, sticky=tk.W)
 
     def press_button(self):
         angle = float(self.angle_entry.get())

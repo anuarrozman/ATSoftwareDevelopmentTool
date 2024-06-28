@@ -11,9 +11,11 @@ logging.basicConfig(level=logging.DEBUG,
 logger = logging.getLogger(__name__)
 
 class SerialCom:
-    def __init__(self): #, receive_text):
+    def __init__(self, atbeam_sensor_temp_update): #, receive_text):
         # self.receive_text = receive_text  
         self.update_db = UpdateDB()
+        self.atbeam_sensor_temp_update = atbeam_sensor_temp_update
+        self.sensor_temp_variable = None
     
     def open_serial_port(self, selected_port, selected_baud):
         try:
@@ -63,8 +65,10 @@ class SerialCom:
 
                     if "3:sensorTemp? = " in decoded_data:
                         sensor_temp = decoded_data.split("=")[1].strip()
-                        logger.info(f"Sensor Temperature: {sensor_temp} degrees Celsius")
-
+                        self.sensor_temp_variable = sensor_temp
+                        logger.info(f"Sensor Temperature: {self.sensor_temp_variable} degrees Celsius")
+                        self.atbeam_sensor_temp_update(self.sensor_temp_variable)  # Trigger event
+                        
             except UnicodeDecodeError as decode_error:
                 logger.error(f"Error decoding data: {decode_error}")
             except Exception as e:
