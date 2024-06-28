@@ -65,16 +65,15 @@ class SerialCommunicationApp:
         self.aht20Sensor = SensorLogger()
         # self.servo_controller = ServoController()
 
+    # Method to retrieve sensor temperature from SerialCom
+    def get_sensor_temperature(self):
+        return self.serialCom.get_sensor_temp_variable()
+
     def read_temp_aht20(self):
         ext_temp = self.aht20Sensor.read_temp_sensor()
         logger.debug(f"External Temperature: {ext_temp}")
         self.get_atbeam_temp()
-        sensor_temp = self.serialCom.get_sensor_temp_variable()
-        logger.debug(f"Sensor Temperature: {sensor_temp}")
-        
-    # def atbeam_sensor_temp_update(self, sensor_temp):
-    #     # Example: Update a label or store in a variable for further use
-    #     self.status_atbeam_temp.config(text=f"Sensor Temp: {sensor_temp} C")
+        self.get_sensor_temperature()
 
     def get_atbeam_temp(self):
         command = "FF:3;sensorTemp?\r\n"

@@ -11,10 +11,8 @@ logging.basicConfig(level=logging.DEBUG,
 logger = logging.getLogger(__name__)
 
 class SerialCom:
-    def __init__(self): #, atbeam_sensor_temp_update): #, receive_text):
-        # self.receive_text = receive_text  
+    def __init__(self):
         self.update_db = UpdateDB()
-        # self.atbeam_sensor_temp_update = atbeam_sensor_temp_update
         self.sensor_temp_variable = None
     
     def open_serial_port(self, selected_port, selected_baud):
@@ -41,6 +39,10 @@ class SerialCom:
         except serial.SerialException as e:
             logger.debug(f"Error closing serial port: {e}")
             
+    def get_sensor_temp_variable(self):
+        print(self.sensor_temp_variable)
+        return self.sensor_temp_variable        
+
     def read_serial_data(self):
         while self.serial_port.is_open:
             try:
@@ -67,16 +69,11 @@ class SerialCom:
                         sensor_temp = decoded_data.split("=")[1].strip()
                         self.sensor_temp_variable = sensor_temp
                         logger.info(f"Sensor Temperature: {self.sensor_temp_variable} C")
-                        # self.atbeam_sensor_temp_update(self.sensor_temp_variable)  # Trigger event
-                        
+                                                
             except UnicodeDecodeError as decode_error:
                 logger.error(f"Error decoding data: {decode_error}")
             except Exception as e:
                 pass
-
-    def get_sensor_temp_variable(self):
-        print(f"Sensor Temp: {self.sensor_temp_variable}")
-        return self.sensor_temp_variable
 
     def send_data_auto(self):
         auto_data = "polyaire&ADT\r\n"
