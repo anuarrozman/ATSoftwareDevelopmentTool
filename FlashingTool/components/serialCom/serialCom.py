@@ -104,7 +104,7 @@ class SerialCom:
             logger.debug(f"Sending automatic data: {auto_data}")
             # read atbeam temp & humid
             self.send_command("FF:3;sensorTemp?\r\n")
-            self.send_command("FF:3;sensorHumi?\r\n")
+            # self.send_command("FF:3;sensorHumi?\r\n")
         else:
             logger.debug("Serial port not open.")
             self.status_label.config(text="Failed")
