@@ -23,7 +23,6 @@ from components.manualTest.manualTest import ManualTestApp
 from components.uploadReport import uploadReport
 from components.loadTestScript.loadTestScript import LoadTestScript
 from components.aht20Sensor.aht20Sensor import SensorLogger
-from components.updateDB.updateDB import UpdateDB
 # from components.servoControl.servoControl import ServoController
 
 class SerialCommunicationApp:
@@ -70,7 +69,7 @@ class SerialCommunicationApp:
         ext_sensor = self.aht20Sensor.read_temp_sensor()
         logger.debug(f"External Temperature: {ext_sensor}")
         self.get_atbeam_temp()
-        time.sleep(3)
+        time.sleep(2)
         self.compare_temp(ext_sensor, self.serialCom.sensor_temp_variable)
 
     def get_atbeam_temp(self):
@@ -81,7 +80,7 @@ class SerialCommunicationApp:
         ext_sensor = self.aht20Sensor.read_humid_sensor()
         logger.debug(f"External Humidity: {ext_sensor}")
         self.get_atbeam_sensor()
-        time.sleep(3)
+        time.sleep(2)
         self.compare_humid(ext_sensor, self.serialCom.sensor_humid_variable)
 
     def get_atbeam_sensor(self):
@@ -394,9 +393,6 @@ class SerialCommunicationApp:
         
         self.status_read_device_mac = tk.Label(self.status_frame, text="Read Device MAC: ")
         self.status_read_device_mac.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
-
-        self.result_read_device_mac_label = tk.Label(self.status_frame, text="")
-        self.result_read_device_mac_label.grid(row=3, column=1, padx=5, pady=5, sticky=tk.W)
         
         self.status_write_device_sn = tk.Label(self.status_frame, text="Write Device S/N: ")
         self.status_write_device_sn.grid(row=4, column=0, padx=5, pady=5, sticky=tk.W)
