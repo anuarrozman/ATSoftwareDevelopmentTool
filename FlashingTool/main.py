@@ -65,7 +65,13 @@ class SerialCommunicationApp:
         # self.servo_controller = ServoController()
 
     def read_temp_aht20(self):
-        self.aht20Sensor.read_temp_sensor()
+        self.ext_temp = self.aht20Sensor.get_temperature() 
+        self.atbeam_temp = self.get_atbeam_temp()
+        logger.info(f"External Temp: {self.ext_temp} and Atbeam Temp: {self.atbeam_temp}")
+
+    def get_atbeam_temp(self):
+        command = "FF:3;sensorTemp?\r\n"
+        self.send_command(command)
 
     def read_humid_aht20(self):
         self.aht20Sensor.read_humid_sensor()
