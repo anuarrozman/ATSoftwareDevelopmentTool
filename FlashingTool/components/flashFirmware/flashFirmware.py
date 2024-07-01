@@ -26,8 +26,8 @@ class FlashFirmware:
         return None
 
     def flash_firmware(self, port_var, baud_var):
-        selected_port = port_var.get()
-        selected_baud = baud_var.get()
+        selected_port = port_var
+        selected_baud = baud_var
 
         # Define keywords for each bin file
         keywords = {
@@ -38,7 +38,7 @@ class FlashFirmware:
         }
 
         # Define the directory to search in
-        search_directory = "/usr/src/app/" # "/home/anuarrozman/s3-bucket"
+        search_directory = "/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware" # /usr/src/app/" # "/home/anuarrozman/s3-bucket"
 
         # Find paths for each bin file using keywords
         bin_paths = {key: self.find_bin_path(keyword, search_directory) for key, keyword in keywords.items()}

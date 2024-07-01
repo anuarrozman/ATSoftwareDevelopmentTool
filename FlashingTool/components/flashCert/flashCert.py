@@ -69,7 +69,8 @@ class FlashCert:
 
     def flash_cert(self, port_var):
         certId = self.get_certId()
-        selected_port = port_var.get()  # Retrieve the selected port from the Combobox
+        # selected_port = port_var.get()  # Retrieve the selected port from the Combobox
+        selected_port = port_var
         if certId:
             bin_path = self.get_bin_path(certId)
             if bin_path:

@@ -1,17 +1,17 @@
 
-mode=ACmV
+mode=DCV
 range=0
-display=1.25
-display_decimal=1.25
-display_unit=mV
+display=0.0135
+display_decimal=0.0135
+display_unit=V
 overload=False
-value=12500000000000000000000000.00
-unit=mV
+value=0.0135
+unit=V
 isMax=False
 ismin=False
 isHold=False
 isRel=False
-isAuto=False
+isAuto=True
 hasBatteryWarning=False
 hashasHVWarning=False
 isDC=False

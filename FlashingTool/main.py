@@ -8,6 +8,8 @@ from cryptography.fernet import Fernet
 import configparser
 import time
 import logging
+import threading
+import multiprocessing
 
 from components.settingWindow.settingWindow import SettingApp
 from components.toolsBar.toolsBar import ToolsBar
@@ -60,9 +62,9 @@ class SerialCommunicationApp:
         self.serialCom = SerialCom(self.result_factory_mode_label, self.status_atbeam_temp, self.status_atbeam_humidity) #self.atbeam_sensor_temp_update) #(self.receive_text)
         
         self.sendEntry = WriteDeviceInfo(self.send_command, self.result_write_serialnumber, self.result_write_mtqr) #, self.log_message)
-        self.dmmReader = DeviceSelectionApp(self.dmm_frame)
+        self.dmmReader = DeviceSelectionApp(self.dmm_frame, self.status_3_3v_test, self.status_5v_test)
         self.multimeter = Multimeter()
-        self.aht20Sensor = SensorLogger()
+        # self.aht20Sensor = SensorLogger()
         # self.servo_controller = ServoController()
 
     def read_temp_aht20(self):
@@ -88,38 +90,40 @@ class SerialCommunicationApp:
         self.send_command(command)
 
     def compare_temp(self, ext_sensor, atbeam_temp):
+        pass
         # add more checking
-        try:
-            with open('sensor.txt', 'r') as file:
-                for line in file:
-                    if "ATBeam Temperature:" in line:
-                        atbeam_temp = line.split(":")[1].strip()
-                        logger.info(f"ATBeam Temperature: {atbeam_temp}")
-                        if ext_sensor == atbeam_temp:
-                            logger.info("Temperature matches")
-                            self.status_atbeam_temp.config(text=f"Sensor Temperature: Pass")
-                        else:
-                            logger.error("Temperature does not match")
-                            self.status_atbeam_temp.config(text=f"Sensor Temperature: Failed")
-        except FileNotFoundError:
-            logger.error("File not found")
+        # try:
+        #     with open('sensor.txt', 'r') as file:
+        #         for line in file:
+        #             if "ATBeam Temperature:" in line:
+        #                 atbeam_temp = line.split(":")[1].strip()
+        #                 logger.info(f"ATBeam Temperature: {atbeam_temp}")
+        #                 if ext_sensor == atbeam_temp:
+        #                     logger.info("Temperature matches")
+        #                     self.status_atbeam_temp.config(text=f"Sensor Temperature: Pass")
+        #                 else:
+        #                     logger.error("Temperature does not match")
+        #                     self.status_atbeam_temp.config(text=f"Sensor Temperature: Failed")
+        # except FileNotFoundError:
+        #     logger.error("File not found")
 
     def compare_humid(self, ext_sensor, atbeam_humid):
+        pass
         # add more checking
-        try:
-            with open('sensor.txt', 'r') as file:
-                for line in file:
-                    if "ATBeam Humidity:" in line:
-                        atbeam_humid = line.split(":")[1].strip()
-                        logger.info(f"ATBeam Humidity: {atbeam_humid}")
-                        if ext_sensor == atbeam_humid:
-                            logger.info("Humidity matches")
-                            self.status_atbeam_humidity.config(text=f"Sensor Humidity: Pass")
-                        else:
-                            logger.error("Humidity does not match")
-                            self.status_atbeam_humidity.config(text=f"Sensor Humidity: Failed")
-        except FileNotFoundError:
-            logger.error("File not found")
+        # try:
+        #     with open('sensor.txt', 'r') as file:
+        #         for line in file:
+        #             if "ATBeam Humidity:" in line:
+        #                 atbeam_humid = line.split(":")[1].strip()
+        #                 logger.info(f"ATBeam Humidity: {atbeam_humid}")
+        #                 if ext_sensor == atbeam_humid:
+        #                     logger.info("Humidity matches")
+        #                     self.status_atbeam_humidity.config(text=f"Sensor Humidity: Pass")
+        #                 else:
+        #                     logger.error("Humidity does not match")
+        #                     self.status_atbeam_humidity.config(text=f"Sensor Humidity: Failed")
+        # except FileNotFoundError:
+        #     logger.error("File not found")
 
     def refresh_dmm_devices(self):
         self.dmmReader.refresh_devices()
@@ -130,11 +134,15 @@ class SerialCommunicationApp:
     def download_list(self):
         self.toolsBar.download_list()
 
-    def flash_firmware(self):
-        self.flashFw.flash_firmware(self.port_var, self.baud_var)
+    def flash_firmware(self, port_var, baud_var):
+        # self.flashFw.flash_firmware(self.port_var, self.baud_var)
+        self.flashFw.flash_firmware(port_var, baud_var)
+        time.sleep(10)
 
-    def flash_cert(self):
-        self.flashCert.flash_cert(self.port_var)
+    def flash_cert(self, port_var):
+        # self.flashCert.flash_cert(self.port_var)
+        self.flashCert.flash_cert(port_var)
+        time.sleep(10)
 
     def open_serial_port(self):
         selected_port = self.port_var1.get()
@@ -143,17 +151,7 @@ class SerialCommunicationApp:
 
     def close_serial_port(self):
         self.serialCom.close_serial_port()
-        
-    def load_test_script(self):
-        ini_file_path = askopenfilename(title="Select .ini file", filetypes=[("INI files", "*.ini")])
-        if not ini_file_path:
-            return
-        
-        self.loadtTestScript = LoadTestScript(ini_file_path)
-        with open(ini_file_path, 'r') as file:
-            content = file.read()
-            print(content)
-
+    
     def get_device_mac(self):
         command = "FF:3;MAC?\r\n"
         self.send_command(command)
@@ -426,6 +424,80 @@ class SerialCommunicationApp:
 
         self.status_atbeam_humidity = tk.Label(self.status_frame, text="Sensor Humidity: ")
         self.status_atbeam_humidity.grid(row=9, column=0, padx=5, pady=5, sticky=tk.W)
+
+        # Start and Stop buttons
+        self.control_frame = tk.Frame(self.root)
+        self.control_frame.grid(row=0, column=1, padx=10, pady=10, sticky=tk.E)
+
+        self.start_button = ttk.Button(self.control_frame, text="Start", command=self.start_test)
+        self.start_button.grid(row=0, column=0, padx=5, pady=5, sticky=tk.E)
+
+        self.stop_button = ttk.Button(self.control_frame, text="Stop", command=None)
+        self.stop_button.grid(row=0, column=1, padx=5, pady=5, sticky=tk.E)
+
+    def load_test_script(self):
+        ini_file_path = askopenfilename(title="Select .ini file", filetypes=[("INI files", "*.ini")])
+        if not ini_file_path:
+            return
+        
+        self.loadtTestScript = LoadTestScript(ini_file_path)
+        with open(ini_file_path, 'r') as file:
+            content = file.read()
+            print(content)
+
+    def start_test(self):
+        logger.info("Starting test")
+
+        ini_file_name = "testscript.ini"
+        current_directory = os.getcwd()  # Get current working directory
+        
+        # Check in the current directory
+        ini_file_path = os.path.join(current_directory, ini_file_name)
+        
+        if not os.path.exists(ini_file_path):
+            logger.error(f"{ini_file_name} not found in the current directory")
+            return
+        
+        # Proceed to load and process the INI file
+        self.loadTestScript = LoadTestScript(ini_file_path)
+
+        config = configparser.ConfigParser()
+        config.read(ini_file_path)
+
+        processes = []
+
+        if "flash" in config:
+            port = config.get("flash", "port")
+            baud = config.get("flash", "baud")
+            logger.info(f"Port: {port}, Baud: {baud}")
+
+            # Create a process for flashing firmware
+            flash_process = multiprocessing.Process(target=self.flash_firmware, args=(port, baud))
+            processes.append(flash_process)
+            flash_process.start()
+
+        if "dmm" in config:
+            dmm_process = multiprocessing.Process(target=self.dmmReader.select_device, args=(0,))
+            processes.append(dmm_process)
+            dmm_process.start()
+        else:
+            logger.error("DMM section not found in the INI file")
+
+        # Wait for all processes to finish
+        for process in processes:
+            process.join()
+
+        # Once firmware flashing is done, proceed with certificate flashing
+        if "flash" in config:
+            cert_process = multiprocessing.Process(target=self.flash_cert, args=(port,))
+            processes.append(cert_process)
+            cert_process.start()
+        else:
+            logger.error("Certificate section not found in the INI file or firmware section missing")
+
+        # Wait for certificate flashing process to finish
+        for process in processes:
+            process.join()
 
     def press_button(self):
         angle = float(self.angle_entry.get())
