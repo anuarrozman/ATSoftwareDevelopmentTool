@@ -8,8 +8,6 @@ from cryptography.fernet import Fernet
 import configparser
 import time
 import logging
-import threading
-import multiprocessing
 
 from components.settingWindow.settingWindow import SettingApp
 from components.toolsBar.toolsBar import ToolsBar
@@ -59,10 +57,10 @@ class SerialCommunicationApp:
         self.toolsBar = ToolsBar()
         self.flashFw = FlashFirmware(self.result_flashing_fw_label) #(self.receive_text)
         self.flashCert = FlashCert(self.result_flashing_cert_label) #(self.log_message)
-        self.serialCom = SerialCom(self.result_factory_mode_label, self.status_atbeam_temp, self.status_atbeam_humidity) #self.atbeam_sensor_temp_update) #(self.receive_text)
+        self.serialCom = SerialCom(self.result_factory_mode_label, self.result_temp_label, self.result_humid_label) #self.atbeam_sensor_temp_update) #(self.receive_text)
         
         self.sendEntry = WriteDeviceInfo(self.send_command, self.result_write_serialnumber, self.result_write_mtqr) #, self.log_message)
-        self.dmmReader = DeviceSelectionApp(self.dmm_frame, self.status_3_3v_test, self.status_5v_test)
+        self.dmmReader = DeviceSelectionApp(self.dmm_frame, self.result_3_3v_test, self.result_5v_test)
         self.multimeter = Multimeter()
         # self.aht20Sensor = SensorLogger()
         # self.servo_controller = ServoController()
@@ -137,12 +135,10 @@ class SerialCommunicationApp:
     def flash_firmware(self, port_var, baud_var):
         # self.flashFw.flash_firmware(self.port_var, self.baud_var)
         self.flashFw.flash_firmware(port_var, baud_var)
-        time.sleep(10)
 
     def flash_cert(self, port_var):
         # self.flashCert.flash_cert(self.port_var)
         self.flashCert.flash_cert(port_var)
-        time.sleep(10)
 
     def open_serial_port(self):
         selected_port = self.port_var1.get()
@@ -415,15 +411,36 @@ class SerialCommunicationApp:
         
         self.status_3_3v_test = tk.Label(self.status_frame, text="3.3V Test: ")
         self.status_3_3v_test.grid(row=6, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.result_3_3v_test = tk.Label(self.status_frame, text="")
+        self.result_3_3v_test.grid(row=6, column=1, padx=5, pady=5, sticky=tk.W)
         
         self.status_5v_test = tk.Label(self.status_frame, text="5V Test: ")
         self.status_5v_test.grid(row=7, column=0, padx=5, pady=5, sticky=tk.W)
 
+        self.result_5v_test = tk.Label(self.status_frame, text="")
+        self.result_5v_test.grid(row=7, column=1, padx=5, pady=5, sticky=tk.W)
+
         self.status_atbeam_temp = tk.Label(self.status_frame, text="Sensor Temperature: ")
         self.status_atbeam_temp.grid(row=8, column=0, padx=5, pady=5, sticky=tk.W)
 
+        self.result_temp_label = tk.Label(self.status_frame, text="")
+        self.result_temp_label.grid(row=8, column=1, padx=5, pady=5, sticky=tk.W)
+
         self.status_atbeam_humidity = tk.Label(self.status_frame, text="Sensor Humidity: ")
         self.status_atbeam_humidity.grid(row=9, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.result_humid_label = tk.Label(self.status_frame, text="")
+        self.result_humid_label.grid(row=9, column=1, padx=5, pady=5, sticky=tk.W)
+
+        self.status_rgb_red_label = tk.Label(self.status_frame, text="Red LED: ")
+        self.status_rgb_red_label.grid(row=10, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.status_rgb_green_label = tk.Label(self.status_frame, text="Green LED: ")
+        self.status_rgb_green_label.grid(row=11, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.status_rgb_blue_label = tk.Label(self.status_frame, text="Blue LED: ")
+        self.status_rgb_blue_label.grid(row=12, column=0, padx=5, pady=5, sticky=tk.W)
 
         # Start and Stop buttons
         self.control_frame = tk.Frame(self.root)
@@ -432,7 +449,7 @@ class SerialCommunicationApp:
         self.start_button = ttk.Button(self.control_frame, text="Start", command=self.start_test)
         self.start_button.grid(row=0, column=0, padx=5, pady=5, sticky=tk.E)
 
-        self.stop_button = ttk.Button(self.control_frame, text="Stop", command=None)
+        self.stop_button = ttk.Button(self.control_frame, text="Start 2", command=self.start_test2)
         self.stop_button.grid(row=0, column=1, padx=5, pady=5, sticky=tk.E)
 
     def load_test_script(self):
@@ -444,6 +461,10 @@ class SerialCommunicationApp:
         with open(ini_file_path, 'r') as file:
             content = file.read()
             print(content)
+    
+    def check_factory_flag(self):
+        flag_value = self.serialCom.get_factory_flag()
+        print(f"Factory Flag: {flag_value}")
 
     def start_test(self):
         logger.info("Starting test")
@@ -464,40 +485,114 @@ class SerialCommunicationApp:
         config = configparser.ConfigParser()
         config.read(ini_file_path)
 
-        processes = []
-
         if "flash" in config:
+            logger.info("Flashing firmware and certificate")
             port = config.get("flash", "port")
             baud = config.get("flash", "baud")
             logger.info(f"Port: {port}, Baud: {baud}")
-
-            # Create a process for flashing firmware
-            flash_process = multiprocessing.Process(target=self.flash_firmware, args=(port, baud))
-            processes.append(flash_process)
-            flash_process.start()
+            self.flash_firmware(port, baud)
+            self.flash_cert(port) 
 
         if "dmm" in config:
-            dmm_process = multiprocessing.Process(target=self.dmmReader.select_device, args=(0,))
-            processes.append(dmm_process)
-            dmm_process.start()
-        else:
-            logger.error("DMM section not found in the INI file")
+            logger.info("Reading multimeter")
+            self.dmmReader.select_device(0)
 
-        # Wait for all processes to finish
-        for process in processes:
-            process.join()
+        if "factory" in config:
+            logger.info("Entering factory mode")
 
-        # Once firmware flashing is done, proceed with certificate flashing
-        if "flash" in config:
-            cert_process = multiprocessing.Process(target=self.flash_cert, args=(port,))
-            processes.append(cert_process)
-            cert_process.start()
-        else:
-            logger.error("Certificate section not found in the INI file or firmware section missing")
+            try:
+                port = config.get("factory", "port")
+                baud = config.get("factory", "baud")
+                self.serialCom.open_serial_port(port, baud)
+            except configparser.NoOptionError:
+                logger.error("Port not found in the INI file")
 
-        # Wait for certificate flashing process to finish
-        for process in processes:
-            process.join()
+        # if "rgb" in config:
+        #     logger.info("LED Test")
+
+        #     try: 
+        #         red = config.get("rgb", "red", fallback=None)
+        #         green = config.get("rgb", "green", fallback=None)
+        #         blue = config.get("rgb", "blue", fallback=None)
+        #         if red:
+        #             self.send_command("FF:3;RGB-1\r\n")
+        #             logger.info("Red LED turned on")
+        #         if not (red or green or blue):
+        #             logger.error("LED colors not found in the INI file")
+        #     except configparser.NoSectionError:
+        #         logger.error("RGB section not found in the INI file")
+
+    def start_test2(self):
+        logger.info("Starting test2")
+
+        ini_file_name = "testscript.ini"
+        current_directory = os.getcwd()  # Get current working directory
+        
+        # Check in the current directory
+        ini_file_path = os.path.join(current_directory, ini_file_name)
+        
+        if not os.path.exists(ini_file_path):
+            logger.error(f"{ini_file_name} not found in the current directory")
+            return
+        
+        # Proceed to load and process the INI file
+        self.loadTestScript = LoadTestScript(ini_file_path)
+
+        config = configparser.ConfigParser()
+        config.read(ini_file_path)
+
+        if "mac_address" in config:
+            logger.info("Reading MAC Address")
+            self.get_device_mac()
+            time.sleep(5)
+
+        if "serial_number" in config:
+            logger.info("Writing Serial Number")
+            self.send_serial_number()
+            time.sleep(5)
+
+        if "matter_qr" in config:
+            logger.info("Writing Matter QR")
+            self.send_mqtr()
+            time.sleep(5)
+
+        if "atbeam_temp" in config:
+            logger.info("Reading ATBeam Temperature")
+            self.get_atbeam_temp()
+            time.sleep(3)
+            # self.read_temp_aht20()
+            # time.sleep(5)
+
+        if "atbeam_humid" in config:
+            logger.info("Reading ATBeam Humidity")
+            self.get_atbeam_humid()
+            time.sleep(3)
+            # self.read_humid_aht20()
+
+        # if "rgb" in config:
+        #     logger.info("LED Test")
+
+        #     try: 
+        #         red = config.get("rgb", "red", fallback=None)
+        #         green = config.get("rgb", "green", fallback=None)
+        #         blue = config.get("rgb", "blue", fallback=None)
+        #         if red:
+        #             self.send_command("FF:3;RGB-1\r\n")
+        #             logger.info("Red LED turned on")
+        #             time.sleep(3)
+        #         if green: 
+        #             self.send_command("FF:3;RGB-2\r\n")
+        #             logger.info("Green LED turned on")
+        #             time.sleep(3)
+        #         if blue:
+        #             self.send_command("FF:3;RGB-3\r\n")
+        #             logger.info("Blue LED turned on")
+        #             time.sleep(3)
+        #         if not (red or green or blue):
+        #             logger.error("LED colors not found in the INI file")
+        #     except configparser.NoSectionError:
+        #         logger.error("RGB section not found in the INI file")
+
 
     def press_button(self):
         angle = float(self.angle_entry.get())

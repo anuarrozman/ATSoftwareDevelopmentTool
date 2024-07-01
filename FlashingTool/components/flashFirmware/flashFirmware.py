@@ -1,5 +1,4 @@
 import subprocess
-import tkinter as tk
 import os
 import logging
 import io
@@ -38,7 +37,7 @@ class FlashFirmware:
         }
 
         # Define the directory to search in
-        search_directory = "/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware" # /usr/src/app/" # "/home/anuarrozman/s3-bucket"
+        search_directory = "/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware" # Update with your directory
 
         # Find paths for each bin file using keywords
         bin_paths = {key: self.find_bin_path(keyword, search_directory) for key, keyword in keywords.items()}
@@ -65,14 +64,16 @@ class FlashFirmware:
                 logger.info(line.strip())
                 if "Hard resetting via RTS pin" in line:
                     logger.info("Firmware Flashing Complete")
-                    self.get_flashing_status()
 
             process.stdout.close()
             process.wait()  # Wait for the process to finish
 
         except subprocess.CalledProcessError as e:
             logger.error(f"Error running esptool.py: {e}")
-            
+        
+        # After the process completes, update the flashing status
+        self.get_flashing_status()
+
     def get_flashing_status(self):
         self.ch.flush()
         log_contents = self.log_capture_string.getvalue()

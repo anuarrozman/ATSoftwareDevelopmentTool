@@ -1,3 +1,3 @@
 Matter Cert ID: 4ca99816-2e3d-4e6b-804b-ec27b9034298, Serial: A00000001, MAC Address: 3C:84:27:D4:5A:78, Matter QR String: 123456, Status: 3
-Matter Cert ID: b109915d-687b-4513-9f4a-a56f7e8f9073, Serial: A00000002, MAC Address: yyyy, Matter QR String: 123456, Status: 0
-Matter Cert ID: a20671ec-9329-488a-9fbc-c5e7e19f2d79, Serial: A00000003, MAC Address: zzzz, Matter QR String: 123456, Status: 0
+Matter Cert ID: b109915d-687b-4513-9f4a-a56f7e8f9073, Serial: A00000002, MAC Address: 3C:84:27:D4:5A:6C, Matter QR String: 123456, Status: 3
+Matter Cert ID: a20671ec-9329-488a-9fbc-c5e7e19f2d79, Serial: A00000003, MAC Address: kkkkkk, Matter QR String: 123456, Status: None

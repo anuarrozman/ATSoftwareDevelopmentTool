@@ -2,6 +2,8 @@ import serial
 import logging
 from threading import Thread
 from components.updateDB.updateDB import UpdateDB
+from threading import Lock
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -15,10 +17,15 @@ class SerialCom:
         self.mac_address_variable = None
         self.serial_port = None
         self.read_thread = None
+        self.factory_flag = False
+        self.factory_flag_lock = Lock()  # Add a lock for factory_flag
     
-    def open_serial_port(self, selected_port, selected_baud):
+    def open_serial_port(self, port_var, baud_var):
+        selected_port = port_var
+        selected_baud = baud_var
+        logger.debug(f"Opening port {selected_port} at {selected_baud} baud")
         try:
-            self.serial_port = serial.Serial(selected_port, baudrate=selected_baud, timeout=1)
+            self.serial_port = serial.Serial(selected_port, selected_baud, timeout=1)
             logger.info(f"Opened port {selected_port} at {selected_baud} baud")
             
             self.read_thread = Thread(target=self.read_serial_data)
@@ -46,6 +53,7 @@ class SerialCom:
                     logger.debug(f"Received: {decoded_data}")
                     
                     if "." in decoded_data:
+                        logger.debug("Data contains '.'")
                         self.send_data_auto()
                     
                     if "3:MAC? = " in decoded_data:
@@ -73,20 +81,20 @@ class SerialCom:
     def process_sensor_temperature(self, decoded_data):
         sensor_temp = decoded_data.split("=")[1].strip()
         self.sensor_temp_variable = sensor_temp
-        logger.info(f"Sensor Temperature: {self.sensor_temp_variable} C")
+        logger.info(f"{self.sensor_temp_variable} C")
         self.save_sensor_temp_variable()
 
     def process_sensor_humidity(self, decoded_data):
         sensor_humid = decoded_data.split("=")[1].strip()
         self.sensor_humid_variable = sensor_humid
-        logger.info(f"Sensor Humidity: {sensor_humid} %")
+        logger.info(f"{sensor_humid} %")
         self.save_sensor_humid_variable()
 
     def save_sensor_temp_variable(self):
         try:
             with open('sensor.txt', 'w') as file:
                 file.write(f"ATBeam Temperature: {self.sensor_temp_variable}\n")
-                self.status_label1.config(text=f"Sensor Temperature: {self.sensor_temp_variable} C")
+                self.status_label1.config(text=f"{self.sensor_temp_variable} C")
             logger.debug(f"Value '{self.sensor_temp_variable}' written to file 'sensor.txt'")
         except Exception as e:
             logger.error(f"Error writing to file: {e}")
@@ -96,7 +104,7 @@ class SerialCom:
         try:
             with open('sensor.txt', 'a') as file:
                 file.write(f"ATBeam Humidity: {self.sensor_humid_variable}\n")
-                self.status_label2.config(text=f"Sensor Humidity: {self.sensor_humid_variable} %")
+                self.status_label2.config(text=f"{self.sensor_humid_variable} %")
             logger.debug(f"Value '{self.sensor_humid_variable}' written to file 'sensor.txt'")
         except Exception as e:
             logger.error(f"Error writing to file: {e}")
@@ -108,7 +116,7 @@ class SerialCom:
         if self.serial_port.is_open:
             self.serial_port.write(auto_data.encode())
             logger.debug(f"Sending automatic data: {auto_data}")
+            time.sleep(5)
         else:
-            logger.debug("Serial port not open.")
             self.status_label.config(text="Failed")
-    
+

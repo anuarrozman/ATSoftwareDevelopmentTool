@@ -88,11 +88,12 @@ class DeviceSelectionApp:
         else:
             # messagebox.showinfo("Voltage Reading", f"Invalid voltage reading: {voltage}")
             logger.info(f"Invalid voltage reading: {voltage}")
+            self.status_label1.config(text=f"Invalid voltage reading: {voltage}")
 
     def is_3_3_voltage(self, voltage):
         # Later change to 3V - 4V
         if 0.01 <= voltage <= 0.03:
-            self.status_label1.config(text=f"3.3V Test: Success {voltage}")
+            self.status_label1.config(text=f"Success {voltage}")
             return True
         else:
             return False
@@ -100,7 +101,7 @@ class DeviceSelectionApp:
     def is_5_voltage(self, voltage):
         # Later change to 4.9V - 5.1V
         if 0.04 <= voltage <= 0.05:
-            self.status_label2.config(text=f"5V Test: Success: {voltage}")
+            self.status_label2.config(text=f"Success: {voltage}")
             return True
         else:
             return False

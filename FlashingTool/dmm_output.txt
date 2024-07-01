@@ -1,11 +1,11 @@
 
 mode=DCV
 range=0
-display=0.0135
-display_decimal=0.0135
+display=0.0124
+display_decimal=0.0124
 display_unit=V
 overload=False
-value=0.0135
+value=0.0124
 unit=V
 isMax=False
 ismin=False
