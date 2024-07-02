@@ -638,17 +638,22 @@ class SerialCommunicationApp:
                 pressing_time = config.get("servo", "pressing_time")
                 button_angle = config.get("servo", "button_angle")
                 pressing_duration = config.get("servo", "pressing_duration")
-                float_pressing_time = float(pressing_time)
-                float_pressing_duration = float(pressing_duration)
-                logger.info(f"Pressing button {float_pressing_time} times, angle: {button_angle}, duration: {float_pressing_duration}")
 
-                for i in range(float_pressing_time):
+                # float_pressing_time = float(pressing_time)
+                # float_pressing_duration = float(pressing_duration)
+
+                # # Convert float_pressing_time to an integer
+                # int_pressing_time = int(float_pressing_time)
+
+                logger.info(f"Pressing button {pressing_time} times, angle: {button_angle}, duration: {pressing_duration}")
+
+                for i in range(pressing_time):
                     logger.info(f"Pressing button {i+1} time")
                     self.servo_controller.set_angle(button_angle)
-                    time.sleep(float_pressing_duration)
+                    time.sleep(pressing_duration)
                     self.servo_controller.set_angle(0)
                     time.sleep(0.5)
-                    
+
             except configparser.NoOptionError:
                 logger.error("Servo configuration not found in the INI file")
 
@@ -670,23 +675,23 @@ class SerialCommunicationApp:
         self.start_task1_thread()
         self.start_task2_thread()
 
-    def press_button(self, angle, pressing_duration, pressing_time):
-        # angle = float(self.angle_entry.get())
-        # pressing_duration = float(self.duration_entry.get())
-        # pressing_time = int(self.pressing_time_entry.get())
+    # def press_button(self, angle, pressing_duration, pressing_time):
+    #     # angle = float(self.angle_entry.get())
+    #     # pressing_duration = float(self.duration_entry.get())
+    #     # pressing_time = int(self.pressing_time_entry.get())
 
-        angle = None
-        pressing_duration = None
-        pressing_time = None
+    #     angle = None
+    #     pressing_duration = None
+    #     pressing_time = None
 
-        logger.info(f"Pressing button {pressing_time} times, angle: {angle}, duration: {pressing_duration}")
+    #     logger.info(f"Pressing button {pressing_time} times, angle: {angle}, duration: {pressing_duration}")
 
-        for i in range(pressing_time):
-            logger.info(f"Pressing button {i+1} time")
-            self.servo_controller.set_angle(angle)
-            time.sleep(pressing_duration)
-            self.servo_controller.set_angle(0)
-            time.sleep(0.5)
+    #     for i in range(pressing_time):
+    #         logger.info(f"Pressing button {i+1} time")
+    #         self.servo_controller.set_angle(angle)
+    #         time.sleep(pressing_duration)
+    #         self.servo_controller.set_angle(0)
+    #         time.sleep(0.5)
 
     def read_version_from_file(self, file_name):
         file_path = os.path.join(os.path.dirname(__file__), file_name)
