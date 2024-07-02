@@ -24,7 +24,7 @@ from components.manualTest.manualTest import ManualTestApp
 from components.uploadReport import uploadReport
 from components.loadTestScript.loadTestScript import LoadTestScript
 from components.aht20Sensor.aht20Sensor import SensorLogger
-# from components.servoControl.servoControl import ServoController
+from components.servoControl.servoControl import ServoController
 
 class SerialCommunicationApp:
     def __init__(self, root):
@@ -66,7 +66,7 @@ class SerialCommunicationApp:
         self.dmmReader = DeviceSelectionApp(self.dmm_frame, self.result_3_3v_test, self.result_5v_test)
         self.multimeter = Multimeter()
         self.aht20Sensor = SensorLogger()
-        # self.servo_controller = ServoController()
+        self.servo_controller = ServoController()
 
     def read_temp_aht20(self):
         ext_sensor = self.aht20Sensor.read_temp_sensor()
@@ -632,7 +632,15 @@ class SerialCommunicationApp:
                 logger.error("RGB section not found in the INI file")
         
         if "servo" in config:
-            pass
+            logger.info("Pressing Button")
+
+            try:
+                pressing_time = config.get("servo", "pressing_time")
+                button_angle = config.get("servo", "button_angle")
+                pressing_duration = config.get("servo", "pressing_duration")
+                logger.info(f"Pressing button {pressing_time} times, angle: {button_angle}, duration: {pressing_duration}")
+            except configparser.NoOptionError:
+                logger.error("Servo configuration not found in the INI file")
 
         if "temp_compare" in config:
             logger.info("Temperature Comparison")
