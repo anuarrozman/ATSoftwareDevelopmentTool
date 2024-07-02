@@ -113,38 +113,38 @@ class SerialCommunicationApp:
         command = "FF:3;sensorHumi?\r\n"
         self.send_command(command)
 
-    # def compare_temp(self, ext_sensor, atbeam_temp):
-    #     try:
-    #         with open('sensor.txt', 'r') as file:
-    #             for line in file:
-    #                 if "ATBeam Temperature:" in line:
-    #                     atbeam_temp = line.split(":")[1].strip()
-    #                     logger.info(f"ATBeam Temperature: {atbeam_temp}")
-    #                     if ext_sensor == atbeam_temp:
-    #                         logger.info("Temperature matches")
-    #                         self.result_temp_label.config(text=f"Pass")
-    #                     else:
-    #                         logger.error("Temperature does not match")
-    #                         self.result_temp_label.config(text=f"Failed")
-    #     except FileNotFoundError:
-    #         logger.error("File not found")
-
-    def compare_humid(self, ext_sensor, atbeam_humid):
-        # add more checking
+    def compare_temp(self, ext_sensor, atbeam_temp):
         try:
             with open('sensor.txt', 'r') as file:
                 for line in file:
-                    if "ATBeam Humidity:" in line:
-                        atbeam_humid = line.split(":")[1].strip()
-                        logger.info(f"ATBeam Humidity: {atbeam_humid}")
-                        if ext_sensor == atbeam_humid:
-                            logger.info("Humidity matches")
-                            self.result_humid_label.config(text=f"Pass")
+                    if "ATBeam Temperature:" in line:
+                        atbeam_temp = line.split(":")[1].strip()
+                        logger.info(f"ATBeam Temperature: {atbeam_temp}")
+                        if ext_sensor == atbeam_temp:
+                            logger.info("Temperature matches")
+                            self.result_temp_label.config(text=f"Pass")
                         else:
-                            logger.error("Humidity does not match")
-                            self.result_humid_label.config(text=f"Failed")
+                            logger.error("Temperature does not match")
+                            self.result_temp_label.config(text=f"Failed")
         except FileNotFoundError:
             logger.error("File not found")
+
+    # def compare_humid(self, ext_sensor, atbeam_humid):
+    #     # add more checking
+    #     try:
+    #         with open('sensor.txt', 'r') as file:
+    #             for line in file:
+    #                 if "ATBeam Humidity:" in line:
+    #                     atbeam_humid = line.split(":")[1].strip()
+    #                     logger.info(f"ATBeam Humidity: {atbeam_humid}")
+    #                     if ext_sensor == atbeam_humid:
+    #                         logger.info("Humidity matches")
+    #                         self.result_humid_label.config(text=f"Pass")
+    #                     else:
+    #                         logger.error("Humidity does not match")
+    #                         self.result_humid_label.config(text=f"Failed")
+    #     except FileNotFoundError:
+    #         logger.error("File not found")
 
     def refresh_dmm_devices(self):
         self.dmmReader.refresh_devices()
