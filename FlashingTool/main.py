@@ -643,33 +643,33 @@ class SerialCommunicationApp:
             self.read_humid_aht20()
             time.sleep(5)
 
-        if "rgb" in config:
-            logger.info("LED Test")
+        # if "rgb" in config:
+        #     logger.info("LED Test")
 
-            try: 
-                red = config.get("rgb", "red", fallback=None)
-                green = config.get("rgb", "green", fallback=None)
-                blue = config.get("rgb", "blue", fallback=None)
-                if red:
-                    self.send_command("FF:3;RGB-1\r\n")
-                    logger.info("Red LED turned on")
-                    time.sleep(3)
-                if green: 
-                    self.send_command("FF:3;RGB-2\r\n")
-                    logger.info("Green LED turned on")
-                    time.sleep(3)
-                if blue:
-                    self.send_command("FF:3;RGB-3\r\n")
-                    logger.info("Blue LED turned on")
-                    time.sleep(3)
-                    self.send_command("FF:3;reboot\r\n")
-                if not (red or green or blue):
-                    logger.error("LED colors not found in the INI file")
-            except configparser.NoSectionError:
-                logger.error("RGB section not found in the INI file")
+        #     try: 
+        #         red = config.get("rgb", "red", fallback=None)
+        #         green = config.get("rgb", "green", fallback=None)
+        #         blue = config.get("rgb", "blue", fallback=None)
+        #         if red:
+        #             self.send_command("FF:3;RGB-1\r\n")
+        #             logger.info("Red LED turned on")
+        #             time.sleep(3)
+        #         if green: 
+        #             self.send_command("FF:3;RGB-2\r\n")
+        #             logger.info("Green LED turned on")
+        #             time.sleep(3)
+        #         if blue:
+        #             self.send_command("FF:3;RGB-3\r\n")
+        #             logger.info("Blue LED turned on")
+        #             time.sleep(3)
+        #             self.send_command("FF:3;reboot\r\n")
+        #         if not (red or green or blue):
+        #             logger.error("LED colors not found in the INI file")
+        #     except configparser.NoSectionError:
+        #         logger.error("RGB section not found in the INI file")
         
-        if "servo" in config:
-            pass
+        # if "servo" in config:
+        #     pass
 
     def start_tas3_thread(self):
         self.task3_thread = threading.Thread(target=self.start_test3)
