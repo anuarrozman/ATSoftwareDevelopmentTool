@@ -350,11 +350,11 @@ class SerialCommunicationApp:
         self.pressing_time_entry = tk.Entry(self.servo_frame)
         self.pressing_time_entry.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
 
-        self.load_config = ttk.Button(self.servo_frame, text="Load Config", command=None)
-        self.load_config.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
+        # self.load_config = ttk.Button(self.servo_frame, text="Load Config", command=None)
+        # self.load_config.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.press_button = ttk.Button(self.servo_frame, text="Press Button", command=self.press_button)
-        self.press_button.grid(row=3, column=1, columnspan=2, padx=5, pady=5, sticky=tk.W)
+        # self.press_button = ttk.Button(self.servo_frame, text="Press Button", command=self.press_button)
+        # self.press_button.grid(row=3, column=1, columnspan=2, padx=5, pady=5, sticky=tk.W)
 
         self.dmm_frame = tk.Frame(self.root)
         self.dmm_frame.grid(row=3, column=0, padx=10, pady=10, sticky=tk.W)
@@ -502,21 +502,9 @@ class SerialCommunicationApp:
             content = file.read()
             print(content)
     
-    def press_button(self, angle, pressing_duration, pressing_time):
-        # angle = float(self.angle_entry.get())
-        # pressing_duration = float(self.duration_entry.get())
-        # pressing_time = int(self.pressing_time_entry.get())
-
-        angle = None
-        pressing_duration = None
-        pressing_time = None
-
-        for i in range(pressing_time):
-            logger.info(f"Pressing button {i+1} time")
-            self.servo_controller.set_angle(angle)
-            time.sleep(pressing_duration)
-            self.servo_controller.set_angle(0)
-            time.sleep(0.5)
+    def check_factory_flag(self):
+        flag_value = self.serialCom.get_factory_flag()
+        print(f"Factory Flag: {flag_value}")
 
     def start_test(self):
         logger.info("Starting test")
@@ -672,6 +660,22 @@ class SerialCommunicationApp:
     def combine_tasks(self):
         self.start_task1_thread()
         self.start_task2_thread()
+
+    def press_button(self, angle, pressing_duration, pressing_time):
+        # angle = float(self.angle_entry.get())
+        # pressing_duration = float(self.duration_entry.get())
+        # pressing_time = int(self.pressing_time_entry.get())
+
+        angle = None
+        pressing_duration = None
+        pressing_time = None
+
+        for i in range(pressing_time):
+            logger.info(f"Pressing button {i+1} time")
+            self.servo_controller.set_angle(angle)
+            time.sleep(pressing_duration)
+            self.servo_controller.set_angle(0)
+            time.sleep(0.5)
 
     def read_version_from_file(self, file_name):
         file_path = os.path.join(os.path.dirname(__file__), file_name)
