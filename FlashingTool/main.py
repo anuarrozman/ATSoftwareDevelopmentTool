@@ -601,15 +601,18 @@ class SerialCommunicationApp:
             logger.info("Reading ATBeam Temperature")
             self.get_atbeam_temp()
             time.sleep(3)
-            self.read_temp_aht20()
-            time.sleep(5)
 
         if "atbeam_humid" in config:
             logger.info("Reading ATBeam Humidity")
             self.get_atbeam_humid()
             time.sleep(3)
+
+        if "temp_compare" in config:
+            logger.info("Temperature Comparison")
+            self.read_temp_aht20()
+            time.sleep(3)
             self.read_humid_aht20()
-            time.sleep(5)
+            time.sleep(3)
 
         if "rgb" in config:
             logger.info("LED Test")
@@ -635,6 +638,9 @@ class SerialCommunicationApp:
                     logger.error("LED colors not found in the INI file")
             except configparser.NoSectionError:
                 logger.error("RGB section not found in the INI file")
+        
+        if "servo" in config:
+            pass
 
     def start_task2_thread(self):
         self.task2_thread = threading.Thread(target=self.start_test2)
