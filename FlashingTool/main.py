@@ -36,6 +36,7 @@ class SerialCommunicationApp:
         self.serial_port = None
         self.task2_thread = None
         self.task1_thread = None
+        self.task3_thread = None
         self.selected_port = ""
 
         # Create GUI elements
@@ -107,9 +108,7 @@ class SerialCommunicationApp:
         self.send_command(command)
 
     def compare_humid(self, ext_sensor, atbeam_humid):
-        print("TESTSTSTSTETST")
         try:
-            print("TESTSTSTSTETSsdasdasdasdT")
             with open('sensor.txt', 'r') as file:
                 for line in file:
                     if "ATBeam Humidity:" in line:
@@ -123,34 +122,6 @@ class SerialCommunicationApp:
                             self.result_humid_label.config(text=f"Failed")
         except FileNotFoundError:
             logger.error("File not found")
-
-    # def read_humid_aht20(self):
-    #     ext_sensor = self.aht20Sensor.read_humid_sensor()
-    #     logger.debug(f"External Humidity: {ext_sensor}")
-    #     # self.get_atbeam_humid()
-    #     # time.sleep(3)
-    #     self.compare_humid(ext_sensor, self.serialCom.sensor_humid_variable)
-
-    # def get_atbeam_humid(self):
-    #     command = "FF:3;sensorHumi?\r\n"
-    #     self.send_command(command)
-
-    # def compare_humid(self, ext_sensor, atbeam_humid):
-    #     # add more checking
-    #     try:
-    #         with open('sensor.txt', 'r') as file:
-    #             for line in file:
-    #                 if "ATBeam Humidity:" in line:
-    #                     atbeam_humid = line.split(":")[1].strip()
-    #                     logger.info(f"ATBeam Humidity: {atbeam_humid}")
-    #                     if ext_sensor == atbeam_humid:
-    #                         logger.info("Humidity matches")
-    #                         self.result_humid_label.config(text=f"Pass")
-    #                     else:
-    #                         logger.error("Humidity does not match")
-    #                         self.result_humid_label.config(text=f"Failed")
-    #     except FileNotFoundError:
-    #         logger.error("File not found")
 
     def refresh_dmm_devices(self):
         self.dmmReader.refresh_devices()
@@ -631,56 +602,83 @@ class SerialCommunicationApp:
             self.get_atbeam_temp()
             time.sleep(5)
 
-        if "atbeam_humid" in config:
-            logger.info("Reading ATBeam Humidity")
-            self.get_atbeam_humid()
+        if "temp_compare" in config:
+            logger.info("Temperature Comparison")
+            self.read_temp_aht20()
             time.sleep(5)
-
-        # if "temp_compare" in config:
-        #     logger.info("Temperature Comparison")
-        #     self.read_temp_aht20()
-        #     time.sleep(5)
-        
-        # if "humid_compare" in config:
-        #     logger.info("Humidity Comparison")
-        #     self.read_humid_aht20()
-        #     time.sleep(5)
-
-        # if "rgb" in config:
-        #     logger.info("LED Test")
-
-        #     try: 
-        #         red = config.get("rgb", "red", fallback=None)
-        #         green = config.get("rgb", "green", fallback=None)
-        #         blue = config.get("rgb", "blue", fallback=None)
-        #         if red:
-        #             self.send_command("FF:3;RGB-1\r\n")
-        #             logger.info("Red LED turned on")
-        #             time.sleep(3)
-        #         if green: 
-        #             self.send_command("FF:3;RGB-2\r\n")
-        #             logger.info("Green LED turned on")
-        #             time.sleep(3)
-        #         if blue:
-        #             self.send_command("FF:3;RGB-3\r\n")
-        #             logger.info("Blue LED turned on")
-        #             time.sleep(3)
-        #             self.send_command("FF:3;reboot\r\n")
-        #         if not (red or green or blue):
-        #             logger.error("LED colors not found in the INI file")
-        #     except configparser.NoSectionError:
-        #         logger.error("RGB section not found in the INI file")
-        
-        # if "servo" in config:
-        #     pass
 
     def start_task2_thread(self):
         self.task2_thread = threading.Thread(target=self.start_test2)
         self.task2_thread.start()
 
+    def start_test3(self):
+        logger.info("Starting test3")
+
+        ini_file_name = "testscript.ini"
+        current_directory = os.getcwd()  # Get current working directory
+        
+        # Check in the current directory
+        ini_file_path = os.path.join(current_directory, ini_file_name)
+        
+        if not os.path.exists(ini_file_path):
+            logger.error(f"{ini_file_name} not found in the current directory")
+            return
+        
+        # Wait for task 1 to complete
+        self.task1_completed.wait()
+        
+        # Proceed to load and process the INI file
+        self.loadTestScript = LoadTestScript(ini_file_path)
+
+        config = configparser.ConfigParser()
+        config.read(ini_file_path)
+
+        if "atbeam_humid" in config:
+            logger.info("Reading ATBeam Humidity")
+            self.get_atbeam_humid()
+            time.sleep(5)
+
+        if "humid_compare" in config:
+            logger.info("Humidity Comparison")
+            self.read_humid_aht20()
+            time.sleep(5)
+
+        if "rgb" in config:
+            logger.info("LED Test")
+
+            try: 
+                red = config.get("rgb", "red", fallback=None)
+                green = config.get("rgb", "green", fallback=None)
+                blue = config.get("rgb", "blue", fallback=None)
+                if red:
+                    self.send_command("FF:3;RGB-1\r\n")
+                    logger.info("Red LED turned on")
+                    time.sleep(3)
+                if green: 
+                    self.send_command("FF:3;RGB-2\r\n")
+                    logger.info("Green LED turned on")
+                    time.sleep(3)
+                if blue:
+                    self.send_command("FF:3;RGB-3\r\n")
+                    logger.info("Blue LED turned on")
+                    time.sleep(3)
+                    self.send_command("FF:3;reboot\r\n")
+                if not (red or green or blue):
+                    logger.error("LED colors not found in the INI file")
+            except configparser.NoSectionError:
+                logger.error("RGB section not found in the INI file")
+        
+        if "servo" in config:
+            pass
+
+    def start_tas3_thread(self):
+        self.task3_thread = threading.Thread(target=self.start_test3)
+        self.task3_thread.start()
+
     def combine_tasks(self):
         self.start_task1_thread()
         self.start_task2_thread()
+        self.start_tas3_thread()
 
     def press_button(self):
         angle = float(self.angle_entry.get())
