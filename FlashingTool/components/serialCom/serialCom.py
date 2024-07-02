@@ -8,11 +8,12 @@ import time
 logger = logging.getLogger(__name__)
 
 class SerialCom:
-    def __init__(self, status_label, status_label1, status_label2, status_label3):
+    def __init__(self, status_label, status_label1, status_label2, status_label3, status_label4):
         self.status_label = status_label
         self.status_label1 = status_label1
         self.status_label2 = status_label2
         self.status_label3 = status_label3
+        self.status_label4 = status_label4
         self.update_db = UpdateDB()
         self.sensor_temp_variable = None
         self.sensor_humid_variable = None
@@ -66,6 +67,9 @@ class SerialCom:
                     
                     if "3:sensorHumi? = " in decoded_data:
                         self.process_sensor_humidity(decoded_data)
+                    
+                    if "3:test_buttonshort = pressed" in decoded_data:
+                        self.status_label4.config(text="Pass")
 
             except UnicodeDecodeError as decode_error:
                 logger.error(f"Error decoding data: {decode_error}")

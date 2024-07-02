@@ -60,7 +60,7 @@ class SerialCommunicationApp:
         self.toolsBar = ToolsBar()
         self.flashFw = FlashFirmware(self.result_flashing_fw_label) #(self.receive_text)
         self.flashCert = FlashCert(self.result_flashing_cert_label) #(self.log_message)
-        self.serialCom = SerialCom(self.result_factory_mode_label, self.result_temp_label, self.result_humid_label, self.result_read_device_mac) #self.atbeam_sensor_temp_update) #(self.receive_text)
+        self.serialCom = SerialCom(self.result_factory_mode_label, self.result_temp_label, self.result_humid_label, self.result_read_device_mac, self.result_button_label) #self.atbeam_sensor_temp_update) #(self.receive_text)
         
         self.sendEntry = WriteDeviceInfo(self.send_command, self.result_write_serialnumber, self.result_write_mtqr) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame, self.result_3_3v_test, self.result_5v_test)
@@ -467,6 +467,12 @@ class SerialCommunicationApp:
 
         self.no_button_blue = ttk.Button(self.status_frame, text="No", command=lambda: self.update_blue_label("Failed"))
         self.no_button_blue.grid(row=12, column=3, padx=5, pady=5, sticky=tk.W)
+
+        self.status_button_label = tk.Label(self.status_frame, text="Button: ")
+        self.status_button_label.grid(row=13, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.result_button_label = tk.Label(self.status_frame, text="Not Yet")
+        self.result_button_label.grid(row=13, column=1, padx=5, pady=5, sticky=tk.W)
 
         # Start and Stop buttons
         self.control_frame = tk.Frame(self.root)
