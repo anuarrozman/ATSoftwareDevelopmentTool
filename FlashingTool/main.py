@@ -639,18 +639,18 @@ class SerialCommunicationApp:
                 button_angle = config.get("servo", "button_angle")
                 pressing_duration = config.get("servo", "pressing_duration")
 
-                # float_pressing_time = float(pressing_time)
-                # float_pressing_duration = float(pressing_duration)
+                float_pressing_time = float(pressing_time)
+                float_pressing_duration = float(pressing_duration)
 
-                # # Convert float_pressing_time to an integer
-                # int_pressing_time = int(float_pressing_time)
+                # Convert float_pressing_time to an integer
+                int_pressing_time = int(float_pressing_time)
 
-                logger.info(f"Pressing button {pressing_time} times, angle: {button_angle}, duration: {pressing_duration}")
+                logger.info(f"Pressing button {int_pressing_time} times, angle: {button_angle}, duration: {float_pressing_duration}")
 
-                for i in range(pressing_time):
+                for i in range(int_pressing_time):
                     logger.info(f"Pressing button {i+1} time")
                     self.servo_controller.set_angle(button_angle)
-                    time.sleep(pressing_duration)
+                    time.sleep(float_pressing_duration)
                     self.servo_controller.set_angle(0)
                     time.sleep(0.5)
 
