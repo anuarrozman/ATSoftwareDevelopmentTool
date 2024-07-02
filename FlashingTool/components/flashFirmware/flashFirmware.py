@@ -37,7 +37,7 @@ class FlashFirmware:
         }
 
         # Define the directory to search in
-        search_directory = "/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware" # Update with your directory
+        search_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/firmware" # Update with your directory
 
         # Find paths for each bin file using keywords
         bin_paths = {key: self.find_bin_path(keyword, search_directory) for key, keyword in keywords.items()}

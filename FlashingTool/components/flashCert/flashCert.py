@@ -93,7 +93,7 @@ class FlashCert:
             self.update_status_label("Failed")
 
     def get_bin_path(self, certId):
-        for root, dirs, files in os.walk("/"):
+        for root, dirs, files in os.walk("/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/certs"):
             for file in files:
                 if file.endswith(".bin") and certId in file:
                     return os.path.join(root, file)  # Return the path of the .bin file
