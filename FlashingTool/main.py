@@ -107,7 +107,9 @@ class SerialCommunicationApp:
         self.send_command(command)
 
     def compare_humid(self, ext_sensor, atbeam_humid):
+        print("TESTSTSTSTETST")
         try:
+            print("TESTSTSTSTETSsdasdasdasdT")
             with open('sensor.txt', 'r') as file:
                 for line in file:
                     if "ATBeam Humidity:" in line:
@@ -642,6 +644,7 @@ class SerialCommunicationApp:
         if "humid_compare" in config:
             logger.info("Humidity Comparison")
             self.read_humid_aht20()
+            self.compare_humid(ex)
             time.sleep(5)
 
         if "rgb" in config:
