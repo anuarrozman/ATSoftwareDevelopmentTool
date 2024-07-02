@@ -65,7 +65,7 @@ class SerialCommunicationApp:
         self.sendEntry = WriteDeviceInfo(self.send_command, self.result_write_serialnumber, self.result_write_mtqr) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame, self.result_3_3v_test, self.result_5v_test)
         self.multimeter = Multimeter()
-        # self.aht20Sensor = SensorLogger()
+        self.aht20Sensor = SensorLogger()
         # self.servo_controller = ServoController()
 
     def read_temp_aht20(self):
