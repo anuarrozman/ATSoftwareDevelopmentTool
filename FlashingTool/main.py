@@ -36,7 +36,6 @@ class SerialCommunicationApp:
         self.serial_port = None
         self.task2_thread = None
         self.task1_thread = None
-        self.task3_thread = None
         self.selected_port = ""
 
         # Create GUI elements
@@ -607,41 +606,15 @@ class SerialCommunicationApp:
             self.get_atbeam_humid()
             time.sleep(5)
 
-    def start_task2_thread(self):
-        self.task2_thread = threading.Thread(target=self.start_test2)
-        self.task2_thread.start()
-
-    def start_test3(self):
-        logger.info("Starting test3")
-
-        ini_file_name = "testscript.ini"
-        current_directory = os.getcwd()  # Get current working directory
+        # if "temp_compare" in config:
+        #     logger.info("Temperature Comparison")
+        #     self.read_temp_aht20()
+        #     time.sleep(5)
         
-        # Check in the current directory
-        ini_file_path = os.path.join(current_directory, ini_file_name)
-        
-        if not os.path.exists(ini_file_path):
-            logger.error(f"{ini_file_name} not found in the current directory")
-            return
-        
-        # Wait for task 1 to complete
-        self.task1_completed.wait()
-        
-        # Proceed to load and process the INI file
-        self.loadTestScript = LoadTestScript(ini_file_path)
-
-        config = configparser.ConfigParser()
-        config.read(ini_file_path)
-
-        if "temp_compare" in config:
-            logger.info("Temperature Comparison")
-            self.read_temp_aht20()
-            time.sleep(5)
-
-        if "humid_compare" in config:
-            logger.info("Humidity Comparison")
-            self.read_humid_aht20()
-            time.sleep(5)
+        # if "humid_compare" in config:
+        #     logger.info("Humidity Comparison")
+        #     self.read_humid_aht20()
+        #     time.sleep(5)
 
         # if "rgb" in config:
         #     logger.info("LED Test")
@@ -671,14 +644,13 @@ class SerialCommunicationApp:
         # if "servo" in config:
         #     pass
 
-    def start_tas3_thread(self):
-        self.task3_thread = threading.Thread(target=self.start_test3)
-        self.task3_thread.start()
+    def start_task2_thread(self):
+        self.task2_thread = threading.Thread(target=self.start_test2)
+        self.task2_thread.start()
 
     def combine_tasks(self):
         self.start_task1_thread()
         self.start_task2_thread()
-        self.start_tas3_thread()
 
     def press_button(self):
         angle = float(self.angle_entry.get())
