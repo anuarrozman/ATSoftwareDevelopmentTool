@@ -7,6 +7,7 @@ from tkinter import messagebox
 from cryptography.fernet import Fernet
 import configparser
 import time
+import threading
 import logging
 
 from components.settingWindow.settingWindow import SettingApp
@@ -33,7 +34,8 @@ class SerialCommunicationApp:
 
         # Serial port configuration
         self.serial_port = None
-        self.read_thread = None
+        self.task2_thread = None
+        self.task1_thread = None
         self.selected_port = ""
 
         # Create GUI elements
@@ -44,6 +46,7 @@ class SerialCommunicationApp:
 
         # Store reference to the Manual Test menu item
         self.manual_test_menu = None
+        self.task1_completed = threading.Event()
 
     def initialize_gui(self):
         self.create_menubar()
@@ -376,81 +379,116 @@ class SerialCommunicationApp:
         self.status_flashing_fw = tk.Label(self.status_frame, text="Flashing Firmware: ")
         self.status_flashing_fw.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
         
-        self.result_flashing_fw_label = tk.Label(self.status_frame, text="")
+        self.result_flashing_fw_label = tk.Label(self.status_frame, text="Not Yet")
         self.result_flashing_fw_label.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
         
         self.status_flashing_cert = tk.Label(self.status_frame, text="Flashing Cert: ")
         self.status_flashing_cert.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
         
-        self.result_flashing_cert_label = tk.Label(self.status_frame, text="")
+        self.result_flashing_cert_label = tk.Label(self.status_frame, text="Not Yet")
         self.result_flashing_cert_label.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
         
         self.status_factory_mode = tk.Label(self.status_frame, text="Factory Mode: ")
         self.status_factory_mode.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.result_factory_mode_label = tk.Label(self.status_frame, text="")
+        self.result_factory_mode_label = tk.Label(self.status_frame, text="Not Yet")
         self.result_factory_mode_label.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
         
         self.status_read_device_mac = tk.Label(self.status_frame, text="Read Device MAC: ")
         self.status_read_device_mac.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.result_read_device_mac = tk.Label(self.status_frame, text="")
+        self.result_read_device_mac = tk.Label(self.status_frame, text="Not Yet")
         self.result_read_device_mac.grid(row=3, column=1, padx=5, pady=5, sticky=tk.W)
         
         self.status_write_device_sn = tk.Label(self.status_frame, text="Write Device S/N: ")
         self.status_write_device_sn.grid(row=4, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.result_write_serialnumber = tk.Label(self.status_frame, text="")
+        self.result_write_serialnumber = tk.Label(self.status_frame,text="Not Yet")
         self.result_write_serialnumber.grid(row=4, column=1, padx=5, pady=5, sticky=tk.W)
         
         self.status_write_device_mtqr = tk.Label(self.status_frame, text="Write Device MTQR: ")
         self.status_write_device_mtqr.grid(row=5, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.result_write_mtqr = tk.Label(self.status_frame, text="")
+        self.result_write_mtqr = tk.Label(self.status_frame, text="Not Yet")
         self.result_write_mtqr.grid(row=5, column=1, padx=5, pady=5, sticky=tk.W)
         
         self.status_3_3v_test = tk.Label(self.status_frame, text="3.3V Test: ")
         self.status_3_3v_test.grid(row=6, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.result_3_3v_test = tk.Label(self.status_frame, text="")
+        self.result_3_3v_test = tk.Label(self.status_frame, text="Not Yet")
         self.result_3_3v_test.grid(row=6, column=1, padx=5, pady=5, sticky=tk.W)
         
         self.status_5v_test = tk.Label(self.status_frame, text="5V Test: ")
         self.status_5v_test.grid(row=7, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.result_5v_test = tk.Label(self.status_frame, text="")
+        self.result_5v_test = tk.Label(self.status_frame, text="Not Yet")
         self.result_5v_test.grid(row=7, column=1, padx=5, pady=5, sticky=tk.W)
 
         self.status_atbeam_temp = tk.Label(self.status_frame, text="Sensor Temperature: ")
         self.status_atbeam_temp.grid(row=8, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.result_temp_label = tk.Label(self.status_frame, text="")
+        self.result_temp_label = tk.Label(self.status_frame, text="Not Yet")
         self.result_temp_label.grid(row=8, column=1, padx=5, pady=5, sticky=tk.W)
 
         self.status_atbeam_humidity = tk.Label(self.status_frame, text="Sensor Humidity: ")
         self.status_atbeam_humidity.grid(row=9, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.result_humid_label = tk.Label(self.status_frame, text="")
+        self.result_humid_label = tk.Label(self.status_frame, text="Not Yet")
         self.result_humid_label.grid(row=9, column=1, padx=5, pady=5, sticky=tk.W)
 
         self.status_rgb_red_label = tk.Label(self.status_frame, text="Red LED: ")
         self.status_rgb_red_label.grid(row=10, column=0, padx=5, pady=5, sticky=tk.W)
 
+        self.result_rgb_red_label = tk.Label(self.status_frame, text="Not Yet")
+        self.result_rgb_red_label.grid(row=10, column=1, padx=5, pady=5, sticky=tk.W)
+
+        self.yes_button_red = ttk.Button(self.status_frame, text="Yes", command=lambda: self.update_red_label("Pass"))
+        self.no_button_red = ttk.Button(self.status_frame, text="No", command=lambda: self.update_red_label("Failed"))
+        self.yes_button_red.grid(row=10, column=2, padx=5, pady=5, sticky=tk.W)
+        self.no_button_red.grid(row=10, column=3, padx=5, pady=5, sticky=tk.W)
+
         self.status_rgb_green_label = tk.Label(self.status_frame, text="Green LED: ")
         self.status_rgb_green_label.grid(row=11, column=0, padx=5, pady=5, sticky=tk.W)
 
+        self.result_rgb_green_label = tk.Label(self.status_frame, text="Not Yet")
+        self.result_rgb_green_label.grid(row=11, column=1, padx=5, pady=5, sticky=tk.W)
+
+        self.yes_button_green = ttk.Button(self.status_frame, text="Yes", command=lambda: self.update_green_label("Pass"))
+        self.yes_button_green.grid(row=11, column=2, padx=5, pady=5, sticky=tk.W)
+
+        self.no_button_green = ttk.Button(self.status_frame, text="No", command=lambda: self.update_green_label("Failed"))
+        self.no_button_green.grid(row=11, column=3, padx=5, pady=5, sticky=tk.W)
+
         self.status_rgb_blue_label = tk.Label(self.status_frame, text="Blue LED: ")
         self.status_rgb_blue_label.grid(row=12, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.result_rgb_blue_label = tk.Label(self.status_frame, text="Not Yet")
+        self.result_rgb_blue_label.grid(row=12, column=1, padx=5, pady=5, sticky=tk.W)
+
+        self.yes_button_blue = ttk.Button(self.status_frame, text="Yes", command=lambda: self.update_blue_label("Pass"))
+        self.yes_button_blue.grid(row=12, column=2, padx=5, pady=5, sticky=tk.W)
+
+        self.no_button_blue = ttk.Button(self.status_frame, text="No", command=lambda: self.update_blue_label("Failed"))
+        self.no_button_blue.grid(row=12, column=3, padx=5, pady=5, sticky=tk.W)
 
         # Start and Stop buttons
         self.control_frame = tk.Frame(self.root)
         self.control_frame.grid(row=0, column=1, padx=10, pady=10, sticky=tk.E)
 
-        self.start_button = ttk.Button(self.control_frame, text="Start", command=self.start_test)
+        self.start_button = ttk.Button(self.control_frame, text="Start", command=self.combine_tasks)
         self.start_button.grid(row=0, column=0, padx=5, pady=5, sticky=tk.E)
 
-        self.stop_button = ttk.Button(self.control_frame, text="Start 2", command=self.start_test2)
-        self.stop_button.grid(row=0, column=1, padx=5, pady=5, sticky=tk.E)
+        # self.stop_button = ttk.Button(self.control_frame, text="Start 2", command=self.start_task2_thread)
+        # self.stop_button.grid(row=0, column=1, padx=5, pady=5, sticky=tk.E)
+
+    def update_red_label(self, text):
+        self.result_rgb_red_label.config(text=text)
+
+    def update_green_label(self, text):
+        self.result_rgb_green_label.config(text=text)
+
+    def update_blue_label(self, text):
+        self.result_rgb_blue_label.config(text=text)
 
     def load_test_script(self):
         ini_file_path = askopenfilename(title="Select .ini file", filetypes=[("INI files", "*.ini")])
@@ -507,20 +545,12 @@ class SerialCommunicationApp:
             except configparser.NoOptionError:
                 logger.error("Port not found in the INI file")
 
-        # if "rgb" in config:
-        #     logger.info("LED Test")
+        # Signal that task 1 is complete
+        self.task1_completed.set()
 
-        #     try: 
-        #         red = config.get("rgb", "red", fallback=None)
-        #         green = config.get("rgb", "green", fallback=None)
-        #         blue = config.get("rgb", "blue", fallback=None)
-        #         if red:
-        #             self.send_command("FF:3;RGB-1\r\n")
-        #             logger.info("Red LED turned on")
-        #         if not (red or green or blue):
-        #             logger.error("LED colors not found in the INI file")
-        #     except configparser.NoSectionError:
-        #         logger.error("RGB section not found in the INI file")
+    def start_task1_thread(self):
+        self.task1_thread = threading.Thread(target=self.start_test)
+        self.task1_thread.start()
 
     def start_test2(self):
         logger.info("Starting test2")
@@ -535,11 +565,19 @@ class SerialCommunicationApp:
             logger.error(f"{ini_file_name} not found in the current directory")
             return
         
+        # Wait for task 1 to complete
+        self.task1_completed.wait()
+        
         # Proceed to load and process the INI file
         self.loadTestScript = LoadTestScript(ini_file_path)
 
         config = configparser.ConfigParser()
         config.read(ini_file_path)
+
+        if "mac_address" in config:
+            logger.info("Reading MAC Address")
+            self.get_device_mac()
+            time.sleep(5)
 
         if "mac_address" in config:
             logger.info("Reading MAC Address")
@@ -569,30 +607,38 @@ class SerialCommunicationApp:
             time.sleep(3)
             # self.read_humid_aht20()
 
-        # if "rgb" in config:
-        #     logger.info("LED Test")
+        if "rgb" in config:
+            logger.info("LED Test")
 
-        #     try: 
-        #         red = config.get("rgb", "red", fallback=None)
-        #         green = config.get("rgb", "green", fallback=None)
-        #         blue = config.get("rgb", "blue", fallback=None)
-        #         if red:
-        #             self.send_command("FF:3;RGB-1\r\n")
-        #             logger.info("Red LED turned on")
-        #             time.sleep(3)
-        #         if green: 
-        #             self.send_command("FF:3;RGB-2\r\n")
-        #             logger.info("Green LED turned on")
-        #             time.sleep(3)
-        #         if blue:
-        #             self.send_command("FF:3;RGB-3\r\n")
-        #             logger.info("Blue LED turned on")
-        #             time.sleep(3)
-        #         if not (red or green or blue):
-        #             logger.error("LED colors not found in the INI file")
-        #     except configparser.NoSectionError:
-        #         logger.error("RGB section not found in the INI file")
+            try: 
+                red = config.get("rgb", "red", fallback=None)
+                green = config.get("rgb", "green", fallback=None)
+                blue = config.get("rgb", "blue", fallback=None)
+                if red:
+                    self.send_command("FF:3;RGB-1\r\n")
+                    logger.info("Red LED turned on")
+                    time.sleep(3)
+                if green: 
+                    self.send_command("FF:3;RGB-2\r\n")
+                    logger.info("Green LED turned on")
+                    time.sleep(3)
+                if blue:
+                    self.send_command("FF:3;RGB-3\r\n")
+                    logger.info("Blue LED turned on")
+                    time.sleep(3)
+                    self.send_command("FF:3;reboot\r\n")
+                if not (red or green or blue):
+                    logger.error("LED colors not found in the INI file")
+            except configparser.NoSectionError:
+                logger.error("RGB section not found in the INI file")
 
+    def start_task2_thread(self):
+        self.task2_thread = threading.Thread(target=self.start_test2)
+        self.task2_thread.start()
+
+    def combine_tasks(self):
+        self.start_task1_thread()
+        self.start_task2_thread()
 
     def press_button(self):
         angle = float(self.angle_entry.get())
