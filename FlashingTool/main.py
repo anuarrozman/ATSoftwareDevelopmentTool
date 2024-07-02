@@ -502,9 +502,21 @@ class SerialCommunicationApp:
             content = file.read()
             print(content)
     
-    def check_factory_flag(self):
-        flag_value = self.serialCom.get_factory_flag()
-        print(f"Factory Flag: {flag_value}")
+    def press_button(self, angle, pressing_duration, pressing_time):
+        # angle = float(self.angle_entry.get())
+        # pressing_duration = float(self.duration_entry.get())
+        # pressing_time = int(self.pressing_time_entry.get())
+
+        angle = None
+        pressing_duration = None
+        pressing_time = None
+
+        for i in range(pressing_time):
+            logger.info(f"Pressing button {i+1} time")
+            self.servo_controller.set_angle(angle)
+            time.sleep(pressing_duration)
+            self.servo_controller.set_angle(0)
+            time.sleep(0.5)
 
     def start_test(self):
         logger.info("Starting test")
@@ -660,22 +672,6 @@ class SerialCommunicationApp:
     def combine_tasks(self):
         self.start_task1_thread()
         self.start_task2_thread()
-
-    def press_button(self, angle, pressing_duration, pressing_time):
-        # angle = float(self.angle_entry.get())
-        # pressing_duration = float(self.duration_entry.get())
-        # pressing_time = int(self.pressing_time_entry.get())
-
-        angle = None
-        pressing_duration = None
-        pressing_time = None
-
-        for i in range(pressing_time):
-            logger.info(f"Pressing button {i+1} time")
-            self.servo_controller.set_angle(angle)
-            time.sleep(pressing_duration)
-            self.servo_controller.set_angle(0)
-            time.sleep(0.5)
 
     def read_version_from_file(self, file_name):
         file_path = os.path.join(os.path.dirname(__file__), file_name)
