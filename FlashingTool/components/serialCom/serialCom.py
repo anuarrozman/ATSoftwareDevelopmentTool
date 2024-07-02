@@ -15,6 +15,7 @@ class SerialCom:
         self.status_label3 = status_label3
         self.update_db = UpdateDB()
         self.sensor_temp_variable = None
+        self.sensor_humid_variable = None
         self.mac_address_variable = None
         self.serial_port = None
         self.read_thread = None
