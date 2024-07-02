@@ -672,6 +672,8 @@ class SerialCommunicationApp:
         pressing_duration = None
         pressing_time = None
 
+        logger.info(f"Pressing button {pressing_time} times, angle: {angle}, duration: {pressing_duration}")
+
         for i in range(pressing_time):
             logger.info(f"Pressing button {i+1} time")
             self.servo_controller.set_angle(angle)
