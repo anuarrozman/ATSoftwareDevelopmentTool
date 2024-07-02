@@ -8,10 +8,11 @@ import time
 logger = logging.getLogger(__name__)
 
 class SerialCom:
-    def __init__(self, status_label, status_label1, status_label2):
+    def __init__(self, status_label, status_label1, status_label2, status_label3):
         self.status_label = status_label
         self.status_label1 = status_label1
         self.status_label2 = status_label2
+        self.status_label3 = status_label3
         self.update_db = UpdateDB()
         self.sensor_temp_variable = None
         self.mac_address_variable = None
@@ -76,6 +77,7 @@ class SerialCom:
         logger.info(f"MAC Address: {mac_address}")
         
         self.update_db.update_text_file(self.mac_address_variable)
+        self.status_label3.config(text="Success")
         self.mac_address_variable = ""
 
     def process_sensor_temperature(self, decoded_data):
