@@ -602,9 +602,9 @@ class SerialCommunicationApp:
             self.get_atbeam_temp()
             time.sleep(5)
 
-        if "temp_compare" in config:
-            logger.info("Temperature Comparison")
-            self.read_temp_aht20()
+        if "atbeam_humid" in config:
+            logger.info("Reading ATBeam Humidity")
+            self.get_atbeam_humid()
             time.sleep(5)
 
     def start_task2_thread(self):
@@ -633,9 +633,9 @@ class SerialCommunicationApp:
         config = configparser.ConfigParser()
         config.read(ini_file_path)
 
-        if "atbeam_humid" in config:
-            logger.info("Reading ATBeam Humidity")
-            self.get_atbeam_humid()
+        if "temp_compare" in config:
+            logger.info("Temperature Comparison")
+            self.read_temp_aht20()
             time.sleep(5)
 
         if "humid_compare" in config:
