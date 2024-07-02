@@ -525,27 +525,27 @@ class SerialCommunicationApp:
         config = configparser.ConfigParser()
         config.read(ini_file_path)
 
-        # if "flash" in config:
-        #     logger.info("Flashing firmware and certificate")
-        #     port = config.get("flash", "port")
-        #     baud = config.get("flash", "baud")
-        #     logger.info(f"Port: {port}, Baud: {baud}")
-        #     self.flash_firmware(port, baud)
-        #     self.flash_cert(port) 
+        if "flash" in config:
+            logger.info("Flashing firmware and certificate")
+            port = config.get("flash", "port")
+            baud = config.get("flash", "baud")
+            logger.info(f"Port: {port}, Baud: {baud}")
+            self.flash_firmware(port, baud)
+            self.flash_cert(port) 
 
-        # if "dmm" in config:
-        #     logger.info("Reading multimeter")
-        #     self.dmmReader.select_device(0)
+        if "dmm" in config:
+            logger.info("Reading multimeter")
+            self.dmmReader.select_device(0)
 
-        # if "factory" in config:
-        #     logger.info("Entering factory mode")
+        if "factory" in config:
+            logger.info("Entering factory mode")
 
-        #     try:
-        #         port = config.get("factory", "port")
-        #         baud = config.get("factory", "baud")
-        #         self.serialCom.open_serial_port(port, baud)
-        #     except configparser.NoOptionError:
-        #         logger.error("Port not found in the INI file")
+            try:
+                port = config.get("factory", "port")
+                baud = config.get("factory", "baud")
+                self.serialCom.open_serial_port(port, baud)
+            except configparser.NoOptionError:
+                logger.error("Port not found in the INI file")
 
         # Signal that task 1 is complete
         self.task1_completed.set()
@@ -576,25 +576,25 @@ class SerialCommunicationApp:
         config = configparser.ConfigParser()
         config.read(ini_file_path)
 
-        # if "mac_address" in config:
-        #     logger.info("Reading MAC Address")
-        #     self.get_device_mac()
-        #     time.sleep(5)
+        if "mac_address" in config:
+            logger.info("Reading MAC Address")
+            self.get_device_mac()
+            time.sleep(5)
 
-        # if "mac_address" in config:
-        #     logger.info("Reading MAC Address")
-        #     self.get_device_mac()
-        #     time.sleep(5)
+        if "mac_address" in config:
+            logger.info("Reading MAC Address")
+            self.get_device_mac()
+            time.sleep(5)
 
-        # if "serial_number" in config:
-        #     logger.info("Writing Serial Number")
-        #     self.send_serial_number()
-        #     time.sleep(5)
+        if "serial_number" in config:
+            logger.info("Writing Serial Number")
+            self.send_serial_number()
+            time.sleep(5)
 
-        # if "matter_qr" in config:
-        #     logger.info("Writing Matter QR")
-        #     self.send_mqtr()
-        #     time.sleep(5)
+        if "matter_qr" in config:
+            logger.info("Writing Matter QR")
+            self.send_mqtr()
+            time.sleep(5)
 
         if "atbeam_temp" in config:
             logger.info("Reading ATBeam Temperature")
