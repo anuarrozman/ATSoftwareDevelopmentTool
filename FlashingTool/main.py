@@ -638,8 +638,10 @@ class SerialCommunicationApp:
                 pressing_time = config.get("servo", "pressing_time")
                 button_angle = config.get("servo", "button_angle")
                 pressing_duration = config.get("servo", "pressing_duration")
-                logger.info(f"Pressing button {pressing_time} times, angle: {button_angle}, duration: {pressing_duration}")
-                self.press_button(button_angle, pressing_duration, pressing_time)
+                float_pressing_time = float(pressing_time)
+                float_pressing_duration = float(pressing_duration)
+                logger.info(f"Pressing button {float_pressing_time} times, angle: {button_angle}, duration: {float_pressing_duration}")
+                self.press_button(button_angle, float_pressing_duration, float_pressing_time)
             except configparser.NoOptionError:
                 logger.error("Servo configuration not found in the INI file")
 
