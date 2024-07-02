@@ -629,16 +629,16 @@ class SerialCommunicationApp:
         if "atbeam_temp" in config:
             logger.info("Reading ATBeam Temperature")
             self.get_atbeam_temp()
-            time.sleep(3)
-
-        if "atbeam_humid" in config:
-            logger.info("Reading ATBeam Humidity")
-            self.get_atbeam_humid()
-            time.sleep(3)
+            time.sleep(5)
 
         if "temp_compare" in config:
             logger.info("Temperature Comparison")
             self.read_temp_aht20()
+            time.sleep(5)
+
+        if "atbeam_humid" in config:
+            logger.info("Reading ATBeam Humidity")
+            self.get_atbeam_humid()
             time.sleep(5)
         
         if "humid_compare" in config:
