@@ -611,6 +611,9 @@ class SerialCommunicationApp:
             logger.info("Temperature Comparison")
             self.read_temp_aht20()
             time.sleep(5)
+        
+        if "humid_compare" in config:
+            logger.info("Humidity Comparison")
             self.read_humid_aht20()
             time.sleep(5)
 
