@@ -99,10 +99,10 @@ class SerialCommunicationApp:
                         logger.info(f"ATBeam Temperature: {atbeam_temp}")
                         if ext_sensor == atbeam_temp:
                             logger.info("Temperature matches")
-                            self.status_atbeam_temp.config(text=f"Sensor Temperature: Pass")
+                            self.result_temp_label.config(text=f"Pass")
                         else:
                             logger.error("Temperature does not match")
-                            self.status_atbeam_temp.config(text=f"Sensor Temperature: Failed")
+                            self.result_temp_label.config(text=f"Failed")
         except FileNotFoundError:
             logger.error("File not found")
 
@@ -116,10 +116,10 @@ class SerialCommunicationApp:
                         logger.info(f"ATBeam Humidity: {atbeam_humid}")
                         if ext_sensor == atbeam_humid:
                             logger.info("Humidity matches")
-                            self.status_atbeam_humidity.config(text=f"Sensor Humidity: Pass")
+                            self.result_humid_label.config(text=f"Pass")
                         else:
                             logger.error("Humidity does not match")
-                            self.status_atbeam_humidity.config(text=f"Sensor Humidity: Failed")
+                            self.result_humid_label.config(text=f"Failed")
         except FileNotFoundError:
             logger.error("File not found")
 
@@ -610,9 +610,9 @@ class SerialCommunicationApp:
         if "temp_compare" in config:
             logger.info("Temperature Comparison")
             self.read_temp_aht20()
-            time.sleep(3)
+            time.sleep(5)
             self.read_humid_aht20()
-            time.sleep(3)
+            time.sleep(5)
 
         if "rgb" in config:
             logger.info("LED Test")
