@@ -20,9 +20,8 @@ class SerialCom:
         self.mac_address_variable = None
         self.serial_port = None
         self.read_thread = None
-        self.factory_flag = False
-        self.factory_flag_lock = Lock()  # Add a lock for factory_flag
-    
+        self.self.button_flag = None
+        
     def open_serial_port(self, port_var, baud_var):
         selected_port = port_var
         selected_baud = baud_var
