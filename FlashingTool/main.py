@@ -491,12 +491,24 @@ class SerialCommunicationApp:
 
     def update_red_label(self, text):
         self.result_rgb_red_label.config(text=text)
+        if text == "Pass":
+            self.no_button_red.config(state='disabled')
+        else:
+            self.yes_button_red.config(state='disabled')
 
     def update_green_label(self, text):
         self.result_rgb_green_label.config(text=text)
+        if text == "Pass":
+            self.no_button_green.config(state='disabled')
+        else:
+            self.yes_button_green.config(state='disabled')
 
     def update_blue_label(self, text):
         self.result_rgb_blue_label.config(text=text)
+        if text == "Pass":
+            self.no_button_blue.config(state='disabled')
+        else:
+            self.yes_button_blue.config(state='disabled')
 
     def load_test_script(self):
         ini_file_path = askopenfilename(title="Select .ini file", filetypes=[("INI files", "*.ini")])
