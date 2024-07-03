@@ -30,7 +30,7 @@ class SerialCommunicationApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Serial Communication App")
-        self.root.attributes('-zoomed', True)
+        self.root.attributes('-fullscreen', True)
 
         # Serial port configuration
         self.serial_port = None
