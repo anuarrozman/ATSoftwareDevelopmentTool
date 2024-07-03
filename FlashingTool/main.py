@@ -527,14 +527,24 @@ class SerialCommunicationApp:
     def start_test(self):
         logger.info("Starting test")
 
+        # ini_file_name = "testscript.ini"
+        # current_directory = os.getcwd()  # Get current working directory
+        
+        # # Check in the current directory
+        # ini_file_path = os.path.join(current_directory, ini_file_name)
+        
+        # if not os.path.exists(ini_file_path):
+        #     logger.error(f"{ini_file_name} not found in the current directory")
+        #     return
+
         ini_file_name = "testscript.ini"
-        current_directory = os.getcwd()  # Get current working directory
-        
-        # Check in the current directory
-        ini_file_path = os.path.join(current_directory, ini_file_name)
-        
+        specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"  # Specify the directory
+
+        # Check in the specified directory
+        ini_file_path = os.path.join(specified_directory, ini_file_name)
+
         if not os.path.exists(ini_file_path):
-            logger.error(f"{ini_file_name} not found in the current directory")
+            logger.error(f"{ini_file_name} not found in the specified directory: {specified_directory}")
             return
         
         # Proceed to load and process the INI file
@@ -575,14 +585,24 @@ class SerialCommunicationApp:
     def start_test2(self):
         logger.info("Starting test2")
 
+        # ini_file_name = "testscript.ini"
+        # current_directory = os.getcwd()  # Get current working directory
+        
+        # # Check in the current directory
+        # ini_file_path = os.path.join(current_directory, ini_file_name)
+        
+        # if not os.path.exists(ini_file_path):
+        #     logger.error(f"{ini_file_name} not found in the current directory")
+        #     return
+
         ini_file_name = "testscript.ini"
-        current_directory = os.getcwd()  # Get current working directory
-        
-        # Check in the current directory
-        ini_file_path = os.path.join(current_directory, ini_file_name)
-        
+        specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"  # Specify the directory
+
+        # Check in the specified directory
+        ini_file_path = os.path.join(specified_directory, ini_file_name)
+
         if not os.path.exists(ini_file_path):
-            logger.error(f"{ini_file_name} not found in the current directory")
+            logger.error(f"{ini_file_name} not found in the specified directory: {specified_directory}")
             return
         
         # Wait for task 1 to complete
