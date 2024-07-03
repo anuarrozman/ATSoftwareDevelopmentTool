@@ -18,13 +18,13 @@ class DeviceSelectionApp:
         self.status_label2 = status_label2
 
     def create_widgets(self):
-        self.device_label = tk.Label(self.parent_frame, text="Devices:")
+        self.device_label = tk.Label(self.parent_frame, text="Devices:", state=tk.DISABLED)
         self.device_label.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
 
         self.device_buttons_frame = tk.Frame(self.parent_frame)
         self.device_buttons_frame.grid(row=1, column=0, columnspan=4, padx=5, pady=5, sticky=tk.W)
 
-        self.refresh_button = tk.Button(self.parent_frame, text="Refresh Devices", command=self.refresh_devices)
+        self.refresh_button = tk.Button(self.parent_frame, text="Refresh Devices", command=self.refresh_devices, state=tk.DISABLED)
         self.refresh_button.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
 
     def refresh_devices(self):
@@ -42,7 +42,7 @@ class DeviceSelectionApp:
 
         # Create buttons for each device
         for i, device in enumerate(self.devices):
-            button = tk.Button(self.device_buttons_frame, text=f"Device {i}", command=lambda idx=i: self.select_device(idx))
+            button = tk.Button(self.device_buttons_frame, text=f"Device {i}", command=lambda idx=i: self.select_device(idx), state=tk.DISABLED if not self.devices else tk.NORMAL)
             button.grid(row=0, column=i, padx=5, pady=5, sticky=tk.W)
 
     def select_device(self, device_number):
