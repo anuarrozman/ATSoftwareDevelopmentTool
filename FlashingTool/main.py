@@ -24,7 +24,7 @@ from components.manualTest.manualTest import ManualTestApp
 from components.uploadReport import uploadReport
 from components.loadTestScript.loadTestScript import LoadTestScript
 from components.aht20Sensor.aht20Sensor import SensorLogger
-# from components.servoControl.servoControl import ServoController
+from components.servoControl.servoControl import ServoController
 
 class SerialCommunicationApp:
     def __init__(self, root):
@@ -65,8 +65,8 @@ class SerialCommunicationApp:
         self.sendEntry = WriteDeviceInfo(self.send_command, self.result_write_serialnumber, self.result_write_mtqr) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame, self.result_3_3v_test, self.result_5v_test)
         self.multimeter = Multimeter()
-        # self.aht20Sensor = SensorLogger()
-        # self.servo_controller = ServoController()
+        self.aht20Sensor = SensorLogger()
+        self.servo_controller = ServoController()
 
     def read_temp_aht20(self):
         ext_sensor = self.aht20Sensor.read_temp_sensor()
@@ -516,319 +516,168 @@ class SerialCommunicationApp:
         logger.info("Starting test")
 
         ini_file_name = "testscript.ini"
-        ini_file_path = self.find_ini_file(ini_file_name)
+        current_directory = os.getcwd()  # Get current working directory
         
-        if ini_file_path is None:
-            logger.error(f"{ini_file_name} not found in the file system")
+        # Check in the current directory
+        ini_file_path = os.path.join(current_directory, ini_file_name)
+        
+        if not os.path.exists(ini_file_path):
+            logger.error(f"{ini_file_name} not found in the current directory")
             return
         
-        logger.info(f"{ini_file_name} found at {ini_file_path}")
+        # Proceed to load and process the INI file
+        self.loadTestScript = LoadTestScript(ini_file_path)
 
         config = configparser.ConfigParser()
-        try:
-            config.read(ini_file_path)
-        except configparser.Error as e:
-            logger.error(f"Error reading {ini_file_name}: {str(e)}")
-            return
+        config.read(ini_file_path)
 
-        for section in config.sections():
-            self.process_section(section, config[section])
+        if "flash" in config:
+            logger.info("Flashing firmware and certificate")
+            port = config.get("flash", "port")
+            baud = config.get("flash", "baud")
+            logger.info(f"Port: {port}, Baud: {baud}")
+            self.flash_firmware(port, baud)
+            self.flash_cert(port) 
+
+        if "dmm" in config:
+            logger.info("Reading multimeter")
+            self.dmmReader.select_device(0)
+
+        if "factory" in config:
+            logger.info("Entering factory mode")
+
+            try:
+                port = config.get("factory", "port")
+                baud = config.get("factory", "baud")
+                self.serialCom.open_serial_port(port, baud)
+            except configparser.NoOptionError:
+                logger.error("Port not found in the INI file")
 
         # Signal that task 1 is complete
         self.task1_completed.set()
-
-    def find_ini_file(self, ini_file_name):
-        for root, dirs, files in os.walk('/'):
-            if ini_file_name in files:
-                return os.path.join(root, ini_file_name)
-        return None
-
-    def process_section(self, section_name, section_config):
-        logger.info(f"[{section_name}]")
-
-        if "flash" in section_config:
-            self.process_flash_section(section_config["flash"])
-
-        if "dmm" in section_config:
-            logger.info("Reading multimeter")
-            self.dmmReader.select_device(0)  # Assuming select_device is correct
-
-        if "factory" in section_config:
-            self.process_factory_section(section_config["factory"])
-
-        if "mac_address" in section_config:
-            self.process_mac_address_section()
-
-        if "serial_number" in section_config:
-            self.process_serial_number_section()
-
-        if "matter_qr" in section_config:
-            self.process_matter_qr_section()
-
-        if "atbeam_temp" in section_config:
-            self.process_atbeam_temp_section()
-
-        if "atbeam_humid" in section_config:
-            self.process_atbeam_humid_section()
-
-        if "rgb" in section_config:
-            self.process_rgb_section(section_config["rgb"])
-
-        if "servo" in section_config:
-            self.process_servo_section(section_config["servo"])
-
-        if "temp_compare" in section_config:
-            self.process_temp_compare_section()
-
-        if "humid_compare" in section_config:
-            self.process_humid_compare_section()
-
-    def process_flash_section(self, flash_config):
-        try:
-            port = flash_config.get("port")
-            baud = flash_config.get("baud")
-            logger.info(f"Flashing firmware and certificate. Port: {port}, Baud: {baud}")
-            self.flash_firmware(port, baud)
-            self.flash_cert(port)
-        except configparser.NoOptionError as e:
-            logger.error(f"Missing option in 'flash' section: {str(e)}")
-
-    def process_factory_section(self, factory_config):
-        try:
-            port = factory_config.get("port")
-            baud = factory_config.get("baud")
-            logger.info(f"Entering factory mode. Port: {port}, Baud: {baud}")
-            self.serialCom.open_serial_port(port, baud)
-        except (configparser.NoOptionError, configparser.NoSectionError) as e:
-            logger.error(f"Missing section or option in 'factory' section: {str(e)}")
-
-    def process_mac_address_section(self):
-        try:
-            logger.info("Reading MAC Address")
-            self.get_device_mac()
-        except configparser.NoOptionError as e:
-            logger.error(f"Missing option in 'mac_address' section: {str(e)}")
-
-    def process_serial_number_section(self): 
-        try:
-            logger.info("Writing Serial Number")
-            self.send_serial_number()
-        except configparser.NoOptionError as e:
-            logger.error(f"Missing option in 'serial_number' section: {str(e)}")
-
-    def process_matter_qr_section(self):
-        try:
-            logger.info("Writing Matter QR")
-            self.send_mqtr()
-        except configparser.NoOptionError as e:
-            logger.error(f"Missing option in 'matter_qr' section: {str(e)}")
-
-    def process_atbeam_temp_section(self):
-        try:
-            logger.info("Reading ATBeam Temperature")
-            self.get_atbeam_temp()
-        except configparser.NoOptionError as e:
-            logger.error(f"Missing option in 'atbeam_temp' section: {str(e)}")
-
-    def process_atbeam_humid_section(self):
-        try:
-            logger.info("Reading ATBeam Humidity")
-            self.get_atbeam_humid()
-        except configparser.NoOptionError as e:
-            logger.error(f"Missing option in 'atbeam_humid' section: {str(e)}")
-
-    def process_rgb_section(self, rgb_config):
-        try: 
-            red = rgb_config.get("red", fallback=None)
-            green = rgb_config.get("green", fallback=None)
-            blue = rgb_config.get("blue", fallback=None)
-            if red:
-                self.send_command("FF:3;RGB-1\r\n")
-                logger.info("Red LED turned on")
-                time.sleep(3)
-            if green: 
-                self.send_command("FF:3;RGB-2\r\n")
-                logger.info("Green LED turned on")
-                time.sleep(3)
-            if blue:
-                self.send_command("FF:3;RGB-3\r\n")
-                logger.info("Blue LED turned on")
-                time.sleep(3)
-                self.send_command("FF:3;reboot\r\n")
-            if not (red or green or blue):
-                logger.error("LED colors not found in the INI file")
-        except configparser.NoSectionError:
-            logger.error("RGB section not found in the INI file")
-
-    def process_servo_section(self, servo_config):
-        try:
-            pressing_time = servo_config.get("pressing_time")
-            button_angle = servo_config.get("button_angle")
-            pressing_duration = servo_config.get("pressing_duration")
-
-            float_pressing_duration = float(pressing_duration)
-            int_pressing_time = int(pressing_time)
-            int_button_angle = int(button_angle)
-
-            logger.info(f"Pressing button {int_pressing_time} times, angle: {int_button_angle}, duration: {float_pressing_duration}")
-
-            for i in range(int_pressing_time):
-                logger.info(f"Pressing button {i+1} time")
-                self.servo_controller.set_angle(int_button_angle)
-                time.sleep(float_pressing_duration)
-                self.servo_controller.set_angle(0)
-                time.sleep(0.5)
-
-        except configparser.NoOptionError:
-            logger.error("Servo configuration not found in the INI file")
-
-    def process_temp_compare_section(self):
-        try:
-            logger.info("Temperature Comparison")
-            self.read_temp_aht20()
-        except configparser.NoOptionError as e:
-            logger.error(f"Missing option in 'temp_compare' section: {str(e)}")
-
-    def process_humid_compare_section(self):
-        try:
-            logger.info("Humidity Comparison")
-            self.read_humid_aht20()
-        except configparser.NoOptionError as e:
-            logger.error(f"Missing option in 'humid_compare' section: {str(e)}")
-
-    def process_reset_device(self):
-        logger.info("Resetting device")
-        self.send_command("FF:3;factoryRST\r\n")
-
-    def process_connect_wifi_device(self):
-        logger.info("Connecting to WiFi")
-        # self.send_command("FF:3;connectwifi\r\n")
 
     def start_task1_thread(self):
         self.task1_thread = threading.Thread(target=self.start_test)
         self.task1_thread.start()
 
-    # def start_test2(self):
-    #     logger.info("Starting test")
+    def start_test2(self):
+        logger.info("Starting test2")
 
-    #     ini_file_name = "testscript.ini"
-    #     ini_file_path = self.find_ini_file(ini_file_name)
+        ini_file_name = "testscript.ini"
+        current_directory = os.getcwd()  # Get current working directory
         
-    #     if ini_file_path is None:
-    #         logger.error(f"{ini_file_name} not found in the file system")
-    #         return
+        # Check in the current directory
+        ini_file_path = os.path.join(current_directory, ini_file_name)
         
-    #     logger.info(f"{ini_file_name} found at {ini_file_path}")
-
-    #     config = configparser.ConfigParser()
-    #     try:
-    #         config.read(ini_file_path)
-    #     except configparser.Error as e:
-    #         logger.error(f"Error reading {ini_file_name}: {str(e)}")
-    #         return
-
-    #     for section in config.sections():
-    #         self.process_section(section, config[section])
+        if not os.path.exists(ini_file_path):
+            logger.error(f"{ini_file_name} not found in the current directory")
+            return
         
-    #     # Wait for task 1 to complete
-    #     self.task1_completed.wait()
-
-    #     if "mac_address" in config:
-    #         logger.info("Reading MAC Address")
-    #         self.get_device_mac()
-    #         time.sleep(5)
-
-    #     if "mac_address" in config:
-    #         logger.info("Reading MAC Address")
-    #         self.get_device_mac()
-    #         time.sleep(5)
-
-    #     if "serial_number" in config:
-    #         logger.info("Writing Serial Number")
-    #         self.send_serial_number()
-    #         time.sleep(5)
-
-    #     if "matter_qr" in config:
-    #         logger.info("Writing Matter QR")
-    #         self.send_mqtr()
-    #         time.sleep(5)
-
-    #     if "atbeam_temp" in config:
-    #         logger.info("Reading ATBeam Temperature")
-    #         self.get_atbeam_temp()
-    #         time.sleep(5)
-
-    #     if "atbeam_humid" in config:
-    #         logger.info("Reading ATBeam Humidity")
-    #         self.get_atbeam_humid()
-    #         time.sleep(5)
-
-    #     if "rgb" in config:
-    #         logger.info("LED Test")
-
-    #         try: 
-    #             red = config.get("rgb", "red", fallback=None)
-    #             green = config.get("rgb", "green", fallback=None)
-    #             blue = config.get("rgb", "blue", fallback=None)
-    #             if red:
-    #                 self.send_command("FF:3;RGB-1\r\n")
-    #                 logger.info("Red LED turned on")
-    #                 time.sleep(3)
-    #             if green: 
-    #                 self.send_command("FF:3;RGB-2\r\n")
-    #                 logger.info("Green LED turned on")
-    #                 time.sleep(3)
-    #             if blue:
-    #                 self.send_command("FF:3;RGB-3\r\n")
-    #                 logger.info("Blue LED turned on")
-    #                 time.sleep(3)
-    #                 self.send_command("FF:3;reboot\r\n")
-    #             if not (red or green or blue):
-    #                 logger.error("LED colors not found in the INI file")
-    #         except configparser.NoSectionError:
-    #             logger.error("RGB section not found in the INI file")
+        # Wait for task 1 to complete
+        self.task1_completed.wait()
         
-    #     if "servo" in config:
-    #         logger.info("Pressing Button")
+        # Proceed to load and process the INI file
+        self.loadTestScript = LoadTestScript(ini_file_path)
 
-    #         try:
-    #             pressing_time = config.get("servo", "pressing_time")
-    #             button_angle = config.get("servo", "button_angle")
-    #             pressing_duration = config.get("servo", "pressing_duration")
+        config = configparser.ConfigParser()
+        config.read(ini_file_path)
 
-    #             float_pressing_duration = float(pressing_duration)
-    #             int_pressing_time = int(pressing_time)
-    #             int_button_angle = int(button_angle)
+        if "mac_address" in config:
+            logger.info("Reading MAC Address")
+            self.get_device_mac()
+            time.sleep(5)
 
-    #             logger.info(f"Pressing button {int_pressing_time} times, angle: {int_button_angle}, duration: {float_pressing_duration}")
+        if "mac_address" in config:
+            logger.info("Reading MAC Address")
+            self.get_device_mac()
+            time.sleep(5)
 
-    #             for i in range(int_pressing_time):
-    #                 logger.info(f"Pressing button {i+1} time")
-    #                 self.servo_controller.set_angle(int_button_angle)
-    #                 time.sleep(float_pressing_duration)
-    #                 self.servo_controller.set_angle(0)
-    #                 time.sleep(0.5)
+        if "serial_number" in config:
+            logger.info("Writing Serial Number")
+            self.send_serial_number()
+            time.sleep(5)
 
-    #         except configparser.NoOptionError:
-    #             logger.error("Servo configuration not found in the INI file")
+        if "matter_qr" in config:
+            logger.info("Writing Matter QR")
+            self.send_mqtr()
+            time.sleep(5)
 
-    #     if "temp_compare" in config:
-    #         logger.info("Temperature Comparison")
-    #         self.read_temp_aht20()
-    #         time.sleep(5)
+        if "atbeam_temp" in config:
+            logger.info("Reading ATBeam Temperature")
+            self.get_atbeam_temp()
+            time.sleep(5)
+
+        if "atbeam_humid" in config:
+            logger.info("Reading ATBeam Humidity")
+            self.get_atbeam_humid()
+            time.sleep(5)
+
+        if "rgb" in config:
+            logger.info("LED Test")
+
+            try: 
+                red = config.get("rgb", "red", fallback=None)
+                green = config.get("rgb", "green", fallback=None)
+                blue = config.get("rgb", "blue", fallback=None)
+                if red:
+                    self.send_command("FF:3;RGB-1\r\n")
+                    logger.info("Red LED turned on")
+                    time.sleep(3)
+                if green: 
+                    self.send_command("FF:3;RGB-2\r\n")
+                    logger.info("Green LED turned on")
+                    time.sleep(3)
+                if blue:
+                    self.send_command("FF:3;RGB-3\r\n")
+                    logger.info("Blue LED turned on")
+                    time.sleep(3)
+                    self.send_command("FF:3;reboot\r\n")
+                if not (red or green or blue):
+                    logger.error("LED colors not found in the INI file")
+            except configparser.NoSectionError:
+                logger.error("RGB section not found in the INI file")
         
-    #     if "humid_compare" in config:
-    #         logger.info("Humidity Comparison")
-    #         self.read_humid_aht20()
-    #         time.sleep(5)
+        if "servo" in config:
+            logger.info("Pressing Button")
 
-    # def start_task2_thread(self):
-    #     self.task2_thread = threading.Thread(target=self.start_test2)
-    #     self.task2_thread.start()
+            try:
+                pressing_time = config.get("servo", "pressing_time")
+                button_angle = config.get("servo", "button_angle")
+                pressing_duration = config.get("servo", "pressing_duration")
+
+                float_pressing_duration = float(pressing_duration)
+                int_pressing_time = int(pressing_time)
+                int_button_angle = int(button_angle)
+
+                logger.info(f"Pressing button {int_pressing_time} times, angle: {int_button_angle}, duration: {float_pressing_duration}")
+
+                for i in range(int_pressing_time):
+                    logger.info(f"Pressing button {i+1} time")
+                    self.servo_controller.set_angle(int_button_angle)
+                    time.sleep(float_pressing_duration)
+                    self.servo_controller.set_angle(0)
+                    time.sleep(0.5)
+
+            except configparser.NoOptionError:
+                logger.error("Servo configuration not found in the INI file")
+
+        if "temp_compare" in config:
+            logger.info("Temperature Comparison")
+            self.read_temp_aht20()
+            time.sleep(5)
+        
+        if "humid_compare" in config:
+            logger.info("Humidity Comparison")
+            self.read_humid_aht20()
+            time.sleep(5)
+
+    def start_task2_thread(self):
+        self.task2_thread = threading.Thread(target=self.start_test2)
+        self.task2_thread.start()
 
     def combine_tasks(self):
         self.start_task1_thread()
-        # self.start_task2_thread()
+        self.start_task2_thread()
 
     # def press_button(self, angle, pressing_duration, pressing_time):
     #     # angle = float(self.angle_entry.get())
