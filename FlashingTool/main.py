@@ -24,7 +24,7 @@ from components.manualTest.manualTest import ManualTestApp
 from components.uploadReport import uploadReport
 from components.loadTestScript.loadTestScript import LoadTestScript
 from components.aht20Sensor.aht20Sensor import SensorLogger
-from components.servoControl.servoControl import ServoController
+# from components.servoControl.servoControl import ServoController
 
 class SerialCommunicationApp:
     def __init__(self, root):
@@ -66,7 +66,7 @@ class SerialCommunicationApp:
         self.dmmReader = DeviceSelectionApp(self.dmm_frame, self.result_3_3v_test, self.result_5v_test)
         self.multimeter = Multimeter()
         self.aht20Sensor = SensorLogger()
-        self.servo_controller = ServoController()
+        # self.servo_controller = ServoController()
 
     def read_temp_aht20(self):
         ext_sensor = self.aht20Sensor.read_temp_sensor()
