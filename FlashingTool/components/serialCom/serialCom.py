@@ -20,8 +20,8 @@ class SerialCom:
         self.mac_address_variable = None
         self.serial_port = None
         self.read_thread = None
-        self.self.button_flag = None
-        
+        self.button_flag = None
+
     def open_serial_port(self, port_var, baud_var):
         selected_port = port_var
         selected_baud = baud_var
