@@ -684,7 +684,7 @@ class SerialCommunicationApp:
             time.sleep(5)
 
         # self.serialCom.get_button_flag()
-        if self.serialCom.button_flag:
+        if self.serialCom.get_button_flag():
             self.process_reset_device()
 
     def start_task2_thread(self):
