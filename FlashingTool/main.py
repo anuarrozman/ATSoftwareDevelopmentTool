@@ -683,6 +683,10 @@ class SerialCommunicationApp:
             self.read_humid_aht20()
             time.sleep(5)
 
+        # self.serialCom.get_button_flag()
+        if self.serialCom.button_flag:
+            self.process_reset_device()
+
     def start_task2_thread(self):
         self.task2_thread = threading.Thread(target=self.start_test2)
         self.task2_thread.start()
@@ -694,6 +698,7 @@ class SerialCommunicationApp:
     def process_reset_device(self):
         logger.info("Resetting device")
         self.send_command("FF:3;factoryRST\r\n")
+        logger.info("Test Completed")
         self.serialCom.close_serial_port()
         self.result_flashing_fw_label.config(text="Not Yet")
         self.result_flashing_cert_label.config(text="Not Yet")
@@ -715,7 +720,6 @@ class SerialCommunicationApp:
         self.yes_button_blue.config(state='normal')
         self.no_button_blue.config(state='normal')
         self.result_button_label.config(text="Not Yet")
-        logger.info("Test Completed")
     # def press_button(self, angle, pressing_duration, pressing_time):
     #     # angle = float(self.angle_entry.get())
     #     # pressing_duration = float(self.duration_entry.get())
@@ -766,5 +770,6 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger(__name__)
+
     root.protocol("WM_DELETE_WINDOW", app.on_exit)
     root.mainloop()

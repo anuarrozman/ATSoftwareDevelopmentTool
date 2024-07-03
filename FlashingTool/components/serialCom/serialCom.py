@@ -70,11 +70,15 @@ class SerialCom:
                     
                     if "3:test_buttonshort = pressed" in decoded_data:
                         self.status_label4.config(text="Pass")
+                        self.button_flag = True
 
             except UnicodeDecodeError as decode_error:
                 logger.error(f"Error decoding data: {decode_error}")
             except Exception as e:
                 logger.error(f"Exception in read_serial_data: {e}")
+
+    def get_button_flag(self):
+        return self.button_flag
         
     def process_mac_address(self, decoded_data):
         mac_address = decoded_data.split("=")[1].strip()
