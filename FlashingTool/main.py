@@ -255,6 +255,10 @@ class SerialCommunicationApp:
         else:
             messagebox.showerror("Error", "Failed to upload report.")
 
+    def disable_frame(self, frame):
+        for child in frame.winfo_children():
+            child.configure(state='disabled')
+
     def create_widgets(self):
         self.serial_baud_frame = tk.Frame(self.root)
         self.serial_baud_frame.grid(row=0, column=0, padx=10, pady=10, sticky=tk.W)
@@ -320,14 +324,18 @@ class SerialCommunicationApp:
         self.read_atbeam_humid_button = ttk.Button(self.serial_baud_frame, text="Read ATBeam Humid", command=self.get_atbeam_humid)
         self.read_atbeam_humid_button.grid(row=1, column=10, padx=5, pady=5, sticky=tk.W)
 
-        text_frame = tk.Frame(self.root)
-        text_frame.grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
+        self.disable_frame(self.serial_baud_frame)
 
-        self.send_entry_frame = ttk.Entry(text_frame, width=50)
+        self.text_frame = tk.Frame(self.root)
+        self.text_frame.grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
+
+        self.send_entry_frame = ttk.Entry(self.text_frame, width=50)
         self.send_entry_frame.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.send_button = ttk.Button(text_frame, text="Send", command=lambda: self.sendEntry.send_entry_command(self.send_entry_frame))
+        self.send_button = ttk.Button(self.text_frame, text="Send", command=lambda: self.sendEntry.send_entry_command(self.send_entry_frame))
         self.send_button.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
+
+        self.disable_frame(self.text_frame)
 
         self.servo_frame = tk.Frame(self.root)
         self.servo_frame.grid(row=4, column=0, padx=10, pady=10, sticky=tk.W)
@@ -350,11 +358,7 @@ class SerialCommunicationApp:
         self.pressing_time_entry = tk.Entry(self.servo_frame)
         self.pressing_time_entry.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
 
-        # self.load_config = ttk.Button(self.servo_frame, text="Load Config", command=None)
-        # self.load_config.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
-
-        # self.press_button = ttk.Button(self.servo_frame, text="Press Button", command=self.press_button)
-        # self.press_button.grid(row=3, column=1, columnspan=2, padx=5, pady=5, sticky=tk.W)
+        self.disable_frame(self.servo_frame)
 
         self.dmm_frame = tk.Frame(self.root)
         self.dmm_frame.grid(row=3, column=0, padx=10, pady=10, sticky=tk.W)
@@ -367,6 +371,8 @@ class SerialCommunicationApp:
 
         self.read_humid_aht20_button = ttk.Button(self.dmm_frame, text="Read Humidity Sensor", command=self.read_humid_aht20)
         self.read_humid_aht20_button.grid(row=4, column=2, padx=5, pady=5, sticky=tk.W)
+
+        self.disable_frame(self.dmm_frame)
         
         # test check
         self.status_frame = tk.Frame(self.root)
@@ -510,15 +516,20 @@ class SerialCommunicationApp:
         logger.info("Starting test")
 
         ini_file_name = "testscript.ini"
-        current_directory = os.getcwd()  # Get current working directory
+        ini_file_path = None
         
-        # Check in the current directory
-        ini_file_path = os.path.join(current_directory, ini_file_name)
+        # Walk through the entire file system to find the ini file
+        for root, dirs, files in os.walk('/'):
+            if ini_file_name in files:
+                ini_file_path = os.path.join(root, ini_file_name)
+                break
         
-        if not os.path.exists(ini_file_path):
-            logger.error(f"{ini_file_name} not found in the current directory")
+        if ini_file_path is None:
+            logger.error(f"{ini_file_name} not found in the entire file system")
             return
         
+        logger.info(f"{ini_file_name} found at {ini_file_path}")
+
         # Proceed to load and process the INI file
         self.loadTestScript = LoadTestScript(ini_file_path)
 
@@ -555,17 +566,22 @@ class SerialCommunicationApp:
         self.task1_thread.start()
 
     def start_test2(self):
-        logger.info("Starting test2")
+        logger.info("Starting test")
 
         ini_file_name = "testscript.ini"
-        current_directory = os.getcwd()  # Get current working directory
+        ini_file_path = None
         
-        # Check in the current directory
-        ini_file_path = os.path.join(current_directory, ini_file_name)
+        # Walk through the entire file system to find the ini file
+        for root, dirs, files in os.walk('/'):
+            if ini_file_name in files:
+                ini_file_path = os.path.join(root, ini_file_name)
+                break
         
-        if not os.path.exists(ini_file_path):
-            logger.error(f"{ini_file_name} not found in the current directory")
+        if ini_file_path is None:
+            logger.error(f"{ini_file_name} not found in the entire file system")
             return
+        
+        logger.info(f"{ini_file_name} found at {ini_file_path}")
         
         # Wait for task 1 to complete
         self.task1_completed.wait()
@@ -631,29 +647,29 @@ class SerialCommunicationApp:
             except configparser.NoSectionError:
                 logger.error("RGB section not found in the INI file")
         
-        if "servo" in config:
-            logger.info("Pressing Button")
+        # if "servo" in config:
+        #     logger.info("Pressing Button")
 
-            try:
-                pressing_time = config.get("servo", "pressing_time")
-                button_angle = config.get("servo", "button_angle")
-                pressing_duration = config.get("servo", "pressing_duration")
+        #     try:
+        #         pressing_time = config.get("servo", "pressing_time")
+        #         button_angle = config.get("servo", "button_angle")
+        #         pressing_duration = config.get("servo", "pressing_duration")
 
-                float_pressing_duration = float(pressing_duration)
-                int_pressing_time = int(pressing_time)
-                int_button_angle = int(button_angle)
+        #         float_pressing_duration = float(pressing_duration)
+        #         int_pressing_time = int(pressing_time)
+        #         int_button_angle = int(button_angle)
 
-                logger.info(f"Pressing button {int_pressing_time} times, angle: {int_button_angle}, duration: {float_pressing_duration}")
+        #         logger.info(f"Pressing button {int_pressing_time} times, angle: {int_button_angle}, duration: {float_pressing_duration}")
 
-                for i in range(int_pressing_time):
-                    logger.info(f"Pressing button {i+1} time")
-                    self.servo_controller.set_angle(int_button_angle)
-                    time.sleep(float_pressing_duration)
-                    self.servo_controller.set_angle(0)
-                    time.sleep(0.5)
+        #         for i in range(int_pressing_time):
+        #             logger.info(f"Pressing button {i+1} time")
+        #             self.servo_controller.set_angle(int_button_angle)
+        #             time.sleep(float_pressing_duration)
+        #             self.servo_controller.set_angle(0)
+        #             time.sleep(0.5)
 
-            except configparser.NoOptionError:
-                logger.error("Servo configuration not found in the INI file")
+        #     except configparser.NoOptionError:
+        #         logger.error("Servo configuration not found in the INI file")
 
         if "temp_compare" in config:
             logger.info("Temperature Comparison")
