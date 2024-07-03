@@ -46,7 +46,7 @@ class UpdateDB:
     def update_text_file(self, mac_address):
         try:
             # Open the text file for reading and writing
-            with open('device_data.txt', 'r+') as file:
+            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r+') as file:
                 lines = file.readlines()
                 found = False
                 updated_lines = []
