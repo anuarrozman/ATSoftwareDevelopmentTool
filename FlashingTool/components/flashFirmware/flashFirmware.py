@@ -37,7 +37,8 @@ class FlashFirmware:
         }
 
         # Define the directory to search in
-        search_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/firmware" # Update with your directory
+        # search_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/firmware" # Update with your directory
+        search_directory = "/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware"
 
         # Find paths for each bin file using keywords
         bin_paths = {key: self.find_bin_path(keyword, search_directory) for key, keyword in keywords.items()}
@@ -81,3 +82,7 @@ class FlashFirmware:
             self.status_label.config(text="Completed")
         else:
             self.status_label.config(text="Failed")
+
+
+# flash write_image /home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware/adt_matter_project_A00000016_1_0_0-de3.bin 0x200000 /home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware/bootloader.bin 0x0 /home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware/partition-table.bin 0xc000 /home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware/ota_data_initial.bin 0x1e000
+# program_esp /home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware/adt_matter_project_A00000016_1_0_0-de3.bin 0x200000 /home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware/bootloader.bin 0x0 /home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware/partition-table.bin 0xc000 /home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware/ota_data_initial.bin 0x1e000 0x10000 verify

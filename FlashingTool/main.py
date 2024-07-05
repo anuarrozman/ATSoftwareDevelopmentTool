@@ -24,13 +24,13 @@ from components.manualTest.manualTest import ManualTestApp
 from components.uploadReport import uploadReport
 from components.loadTestScript.loadTestScript import LoadTestScript
 from components.aht20Sensor.aht20Sensor import SensorLogger
-from components.servoControl.servoControl import ServoController
+# from components.servoControl.servoControl import ServoController
 
 class SerialCommunicationApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Serial Communication App")
-        self.root.attributes('-fullscreen', True)
+        self.root.attributes('-zoomed', True)
 
         # Serial port configuration
         self.serial_port = None
@@ -65,15 +65,16 @@ class SerialCommunicationApp:
         self.sendEntry = WriteDeviceInfo(self.send_command, self.result_write_serialnumber, self.result_write_mtqr) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame, self.result_3_3v_test, self.result_5v_test)
         self.multimeter = Multimeter()
-        self.aht20Sensor = SensorLogger()
-        self.servo_controller = ServoController()
+        # self.aht20Sensor = SensorLogger()
+        # self.servo_controller = ServoController()
 
     def read_temp_aht20(self):
-        ext_sensor = self.aht20Sensor.read_temp_sensor()
-        logger.debug(f"External Temperature: {ext_sensor}")
-        # self.get_atbeam_temp()
-        # time.sleep(3)
-        self.compare_temp(ext_sensor, self.serialCom.sensor_temp_variable)
+        pass
+        # ext_sensor = self.aht20Sensor.read_temp_sensor()
+        # logger.debug(f"External Temperature: {ext_sensor}")
+        # # self.get_atbeam_temp()
+        # # time.sleep(3)
+        # self.compare_temp(ext_sensor, self.serialCom.sensor_temp_variable)
 
     def get_atbeam_temp(self):
         command = "FF:3;sensorTemp?\r\n"
@@ -96,11 +97,12 @@ class SerialCommunicationApp:
             logger.error("File not found")
     
     def read_humid_aht20(self):
-        ext_sensor = self.aht20Sensor.read_humid_sensor()
-        logger.debug(f"External Humidity: {ext_sensor}")
-        # self.get_atbeam_humid()
-        # time.sleep(3)
-        self.compare_humid(ext_sensor, self.serialCom.sensor_humid_variable)
+        pass
+        # ext_sensor = self.aht20Sensor.read_humid_sensor()
+        # logger.debug(f"External Humidity: {ext_sensor}")
+        # # self.get_atbeam_humid()
+        # # time.sleep(3)
+        # self.compare_humid(ext_sensor, self.serialCom.sensor_humid_variable)
 
     def get_atbeam_humid(self):
         command = "FF:3;sensorHumi?\r\n"
@@ -538,7 +540,8 @@ class SerialCommunicationApp:
         #     return
 
         ini_file_name = "testscript.ini"
-        specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"  # Specify the directory
+        # specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"  # Specify the directory
+        specified_directory = "/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool"  # Specify the directory
 
         # Check in the specified directory
         ini_file_path = os.path.join(specified_directory, ini_file_name)
@@ -596,7 +599,8 @@ class SerialCommunicationApp:
         #     return
 
         ini_file_name = "testscript.ini"
-        specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"  # Specify the directory
+        # specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"  # Specify the directory
+        specified_directory = "/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool"  # Specify the directory
 
         # Check in the specified directory
         ini_file_path = os.path.join(specified_directory, ini_file_name)
