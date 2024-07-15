@@ -15,7 +15,9 @@ class FlashFirmware:
         self.ch = logging.StreamHandler(self.log_capture_string)
         self.ch.setLevel(logging.INFO)
         self.ch.setFormatter(logging.Formatter('%(message)s'))
-        logger.addHandler(self.ch)
+        # Clean up previous handlers if any to avoid duplicate logs
+        if not any(isinstance(handler, logging.StreamHandler) for handler in logger.handlers):
+            logger.addHandler(self.ch)
     
     def find_bin_path(self, keyword, search_directory):
         for root, dirs, files in os.walk(search_directory):
@@ -37,7 +39,6 @@ class FlashFirmware:
         }
 
         # Define the directory to search in
-        # search_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/firmware" # Update with your directory
         search_directory = "/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware"
 
         # Find paths for each bin file using keywords
@@ -71,6 +72,8 @@ class FlashFirmware:
 
         except subprocess.CalledProcessError as e:
             logger.error(f"Error running esptool.py: {e}")
+        except Exception as e:
+            logger.error(f"An unexpected error occurred: {e}")
         
         # After the process completes, update the flashing status
         self.get_flashing_status()
@@ -79,10 +82,10 @@ class FlashFirmware:
         self.ch.flush()
         log_contents = self.log_capture_string.getvalue()
         if "Firmware Flashing Complete" in log_contents:
-            self.status_label.config(text="Completed")
+            self.update_status_label("Completed", "green", ("Helvetica", 12, "bold"))
         else:
-            self.status_label.config(text="Failed")
+            self.update_status_label("Failed", "red", ("Helvetica", 12, "bold"))
 
+    def update_status_label(self, message, fg, font):
+        self.status_label.config(text=message, fg=fg, font=font)  # Update the status label with the message
 
-# flash write_image /home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware/adt_matter_project_A00000016_1_0_0-de3.bin 0x200000 /home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware/bootloader.bin 0x0 /home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware/partition-table.bin 0xc000 /home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware/ota_data_initial.bin 0x1e000
-# program_esp /home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware/adt_matter_project_A00000016_1_0_0-de3.bin 0x200000 /home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware/bootloader.bin 0x0 /home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware/partition-table.bin 0xc000 /home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/firmware/ota_data_initial.bin 0x1e000 0x10000 verify

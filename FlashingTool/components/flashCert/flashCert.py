@@ -15,7 +15,8 @@ class FlashCert:
 
     def get_certId(self):
         try:
-            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            with open('/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
                 for line in file:
                     if 'Matter Cert ID:' in line and 'Status: None' in line:
                         certId = line.split('Matter Cert ID: ')[1].split(',')[0].strip()
@@ -54,10 +55,12 @@ class FlashCert:
 
     def update_status(self, certId):
         try:
-            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            with open ('/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
                 lines = file.readlines()
             
-            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
+            # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
+            with open ('/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
                 for line in lines:
                     if f'Matter Cert ID: {certId}' in line:
                         line = line.replace('Status: None', 'Status: 0')
@@ -81,19 +84,20 @@ class FlashCert:
                     self.create_folder()
                     self.save_cert_id_to_ini(os.path.join(os.path.dirname(__file__), self.get_serial_number()), certId)
                     self.log_message(f"Cert {certId} flashed successfully.")
-                    self.update_status_label("Completed")
+                    self.update_status_label("Completed", "green", ("Helvetica", 12, "bold"))
                 else:
                     self.log_message("No port selected. Please select a port before flashing.")
-                    self.update_status_label("Failed")
+                    self.update_status_label("Failed", "red", ("Helvetica", 12, "bold"))
             else:
                 self.log_message(f"No .bin file found for certId {certId}.")
-                self.update_status_label("Failed")
+                self.update_status_label("Failed", "red", ("Helvetica", 12, "bold"))
         else:
             self.log_message("No available certId found in the text file.")
-            self.update_status_label("Failed")
+            self.update_status_label("Failed", "red", ("Helvetica", 12, "bold"))
 
     def get_bin_path(self, certId):
-        for root, dirs, files in os.walk("/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/certs"):
+        # for root, dirs, files in os.walk("/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/certs"):
+        for root, dirs, files in os.walk("/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/certs"):
             for file in files:
                 if file.endswith(".bin") and certId in file:
                     return os.path.join(root, file)  # Return the path of the .bin file
@@ -106,5 +110,5 @@ class FlashCert:
         logger.info(message)  # Replace this with your preferred logging mechanism
         # self.log_message_callback(message)
 
-    def update_status_label(self, message):
-        self.status_label.config(text=message)
+    def update_status_label(self, message, fg, font):
+        self.status_label.config(text=message, fg=fg, font=font)  # Update the status label with the message
