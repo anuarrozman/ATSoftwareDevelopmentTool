@@ -35,7 +35,8 @@ class FlashFirmware:
             "boot_loader": "bootloader",
             "partition_table": "partition-table",
             "ota_data_initial": "ota_data_initial",
-            "firmware": "adt_matter_project_"
+            # "firmware": "adt_matter_project_"
+            "firmware": "v1_0_0-20240716-de5"
         }
 
         # Define the directory to search in
