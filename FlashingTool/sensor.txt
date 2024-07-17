@@ -1,2 +1,0 @@
-ATBeam Temperature: 25.43
-ATBeam Humidity: 63.16

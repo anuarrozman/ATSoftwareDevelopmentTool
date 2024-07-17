@@ -9,6 +9,7 @@ import configparser
 import time
 import threading
 import logging
+import concurrent.futures
 
 from components.settingWindow.settingWindow import SettingApp
 from components.toolsBar.toolsBar import ToolsBar
@@ -65,7 +66,7 @@ class SerialCommunicationApp:
 
     def initialize_components(self):
         self.toolsBar = ToolsBar()
-        self.flashFw = FlashFirmware(self.result_flashing_fw_label) #(self.receive_text)
+        self.flashFw = FlashFirmware(self.result_flashing_fw_label, self.result_flashing_fw_h2_label) #(self.receive_text)
         self.flashCert = FlashCert(self.result_flashing_cert_label) #(self.log_message)
         self.serialCom = SerialCom(self.result_factory_mode_label, self.atbeam_temp_value, self.atbeam_humid_value, self.result_read_device_mac, self.result_button_label, self.result_ir_def_label, self.result_read_prod_name, self.read_prod_name, self.read_device_mac, self.read_device_sn, self.read_device_mtqr) #self.atbeam_sensor_temp_update) #(self.receive_text)
         
@@ -173,9 +174,12 @@ class SerialCommunicationApp:
     def download_list(self):
         self.toolsBar.download_list()
 
-    def flash_firmware(self, port_var, baud_var):
-        # self.flashFw.flash_firmware(self.port_var, self.baud_var)
-        self.flashFw.flash_firmware(port_var, baud_var)
+    def flash_s3_firmware(self, port_var, baud_var):
+        # self.flashFw.flash_s3_firmware(self.port_var, self.baud_var)
+        self.flashFw.flash_s3_firmware(port_var, baud_var)
+        
+    def flash_h2_firmware(self, port_var, baud_var):
+        self.flashFw.flash_h2_firmware(port_var, baud_var)
 
     def flash_cert(self, port_var):
         # self.flashCert.flash_cert(self.port_var)
@@ -356,7 +360,7 @@ class SerialCommunicationApp:
         self.baud_dropdown['values'] = ["9600", "115200", "460800"]
         self.baud_dropdown.set("460800")
 
-        self.flash_button = ttk.Button(self.serial_baud_frame, text="Flash FW", command=self.flash_firmware)
+        self.flash_button = ttk.Button(self.serial_baud_frame, text="Flash FW", command=self.flash_s3_firmware)
         self.flash_button.grid(row=0, column=4, padx=5, pady=5, sticky=tk.W)
 
         self.cert_flash_button = ttk.Button(self.serial_baud_frame, text="Flash Cert", command=self.flash_cert)
@@ -496,8 +500,11 @@ class SerialCommunicationApp:
         self.status_flashing_fw = tk.Label(self.group1_frame, text="Flashing Firmware: ")
         self.status_flashing_fw.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
         
-        self.result_flashing_fw_label = tk.Label(self.group1_frame, text="Not Yet")
+        self.result_flashing_fw_label = tk.Label(self.group1_frame, text="S3: Not Yet")
         self.result_flashing_fw_label.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
+        
+        self.result_flashing_fw_h2_label = tk.Label(self.group1_frame, text="H2: Not Yet")
+        self.result_flashing_fw_h2_label.grid(row=1, column=2, padx=5, pady=5, sticky=tk.W)
         
         self.status_flashing_cert = tk.Label(self.group1_frame, text="Flashing Cert: ")
         self.status_flashing_cert.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
@@ -687,10 +694,10 @@ class SerialCommunicationApp:
         self.result_ir_led1 = tk.Label(self.group3_frame, text="Not Yet")
         self.result_ir_led1.grid(row=5, column=1, padx=5, pady=5, sticky=tk.W)
         
-        self.yes_button_ir_led1 = ttk.Button(self.group3_frame, text="Yes", command=None)
+        self.yes_button_ir_led1 = ttk.Button(self.group3_frame, text="Yes", command=lambda: self.update_ir_led1_label("Pass", fg="green", font=("Helvetica", 12, "bold")))
         self.yes_button_ir_led1.grid(row=5, column=2, padx=5, pady=5, sticky=tk.W)
         
-        self.no_button_ir_led1 = ttk.Button(self.group3_frame, text="No", command=None)
+        self.no_button_ir_led1 = ttk.Button(self.group3_frame, text="No", command=lambda: self.update_ir_led1_label("Failed", fg="red", font=("Helvetica", 12, "bold")))
         self.no_button_ir_led1.grid(row=5, column=3, padx=5, pady=5, sticky=tk.W)
         
         self.ir_led2_label = tk.Label(self.group3_frame, text="IR LED 2: ")
@@ -699,10 +706,10 @@ class SerialCommunicationApp:
         self.result_ir_led2 = tk.Label(self.group3_frame, text="Not Yet")
         self.result_ir_led2.grid(row=6, column=1, padx=5, pady=5, sticky=tk.W)
         
-        self.yes_button_ir_led2 = ttk.Button(self.group3_frame, text="Yes", command=None)
+        self.yes_button_ir_led2 = ttk.Button(self.group3_frame, text="Yes", command=lambda: self.update_ir_led2_label("Pass", fg="green", font=("Helvetica", 12, "bold")))
         self.yes_button_ir_led2.grid(row=6, column=2, padx=5, pady=5, sticky=tk.W)
         
-        self.no_button_ir_led2 = ttk.Button(self.group3_frame, text="No", command=None)
+        self.no_button_ir_led2 = ttk.Button(self.group3_frame, text="No", command=lambda: self.update_ir_led2_label("Failed", fg="red", font=("Helvetica", 12, "bold")))
         self.no_button_ir_led2.grid(row=6, column=3, padx=5, pady=5, sticky=tk.W)
         
         self.ir_led3_label = tk.Label(self.group3_frame, text="IR LED 3: ")
@@ -711,10 +718,10 @@ class SerialCommunicationApp:
         self.result_ir_led3 = tk.Label(self.group3_frame, text="Not Yet")
         self.result_ir_led3.grid(row=7, column=1, padx=5, pady=5, sticky=tk.W)
         
-        self.yes_button_ir_led3 = ttk.Button(self.group3_frame, text="Yes", command=None)
+        self.yes_button_ir_led3 = ttk.Button(self.group3_frame, text="Yes", command=lambda: self.update_ir_led3_label("Pass", fg="green", font=("Helvetica", 12, "bold")))
         self.yes_button_ir_led3.grid(row=7, column=2, padx=5, pady=5, sticky=tk.W)
         
-        self.no_button_ir_led3 = ttk.Button(self.group3_frame, text="No", command=None)
+        self.no_button_ir_led3 = ttk.Button(self.group3_frame, text="No", command=lambda: self.update_ir_led3_label("Failed", fg="red", font=("Helvetica", 12, "bold")))
         self.no_button_ir_led3.grid(row=7, column=3, padx=5, pady=5, sticky=tk.W)
         
         self.ir_led4_label = tk.Label(self.group3_frame, text="IR LED 4: ")
@@ -723,10 +730,10 @@ class SerialCommunicationApp:
         self.result_ir_led4 = tk.Label(self.group3_frame, text="Not Yet")
         self.result_ir_led4.grid(row=8, column=1, padx=5, pady=5, sticky=tk.W)
         
-        self.yes_button_ir_led4 = ttk.Button(self.group3_frame, text="Yes", command=None)
+        self.yes_button_ir_led4 = ttk.Button(self.group3_frame, text="Yes", command=lambda: self.update_ir_led4_label("Pass", fg="green", font=("Helvetica", 12, "bold")))
         self.yes_button_ir_led4.grid(row=8, column=2, padx=5, pady=5, sticky=tk.W)
         
-        self.no_button_ir_led4 = ttk.Button(self.group3_frame, text="No", command=None)
+        self.no_button_ir_led4 = ttk.Button(self.group3_frame, text="No", command=lambda: self.update_ir_led4_label("Failed", fg="red", font=("Helvetica", 12, "bold")))
         self.no_button_ir_led4.grid(row=8, column=3, padx=5, pady=5, sticky=tk.W)
         
         self.ir_led5_label = tk.Label(self.group3_frame, text="IR LED 5: ")
@@ -735,10 +742,10 @@ class SerialCommunicationApp:
         self.result_ir_led5 = tk.Label(self.group3_frame, text="Not Yet")
         self.result_ir_led5.grid(row=9, column=1, padx=5, pady=5, sticky=tk.W)
         
-        self.yes_button_ir_led5 = ttk.Button(self.group3_frame, text="Yes", command=None)
+        self.yes_button_ir_led5 = ttk.Button(self.group3_frame, text="Yes", command=lambda: self.update_ir_led5_label("Pass", fg="green", font=("Helvetica", 12, "bold")))
         self.yes_button_ir_led5.grid(row=9, column=2, padx=5, pady=5, sticky=tk.W)
         
-        self.no_button_ir_led5 = ttk.Button(self.group3_frame, text="No", command=None)
+        self.no_button_ir_led5 = ttk.Button(self.group3_frame, text="No", command=lambda: self.update_ir_led5_label("Failed", fg="red", font=("Helvetica", 12, "bold")))
         self.no_button_ir_led5.grid(row=9, column=3, padx=5, pady=5, sticky=tk.W)
         
 
@@ -779,32 +786,39 @@ class SerialCommunicationApp:
         self.no_h2_led_check = ttk.Button(self.group4_frame, text="No", command=None)
         self.no_h2_led_check.grid(row=3, column=3, padx=5, pady=5, sticky=tk.W)
 
-    def update_red_label(self, text, fg, font):
-        self.result_rgb_red_label.config(text=text, fg=fg, font=font)
+    def update_label(self, label, text, fg, font, no_button, yes_button, color):
+        label.config(text=text, fg=fg, font=font)
         if text == "Pass":
-            self.no_button_red.config(state='disabled')
-            logger.info("Red LED: Pass")
+            no_button.config(state='disabled')
+            logger.info(f"{color} LED: Pass")
         else:
-            self.yes_button_red.config(state='disabled')
-            logger.error("Red LED: Failed")
+            yes_button.config(state='disabled')
+            logger.error(f"{color} LED: Failed")
+
+    def update_red_label(self, text, fg, font):
+        self.update_label(self.result_rgb_red_label, text, fg, font, self.no_button_red, self.yes_button_red, "Red")
 
     def update_green_label(self, text, fg, font):
-        self.result_rgb_green_label.config(text=text, fg=fg, font=font)
-        if text == "Pass":
-            self.no_button_green.config(state='disabled')
-            logger.info("Green LED: Pass")
-        else:
-            self.yes_button_green.config(state='disabled')
-            logger.error("Green LED: Failed")
+        self.update_label(self.result_rgb_green_label, text, fg, font, self.no_button_green, self.yes_button_green, "Green")
 
     def update_blue_label(self, text, fg, font):
-        self.result_rgb_blue_label.config(text=text, fg=fg, font=font)
-        if text == "Pass":
-            self.no_button_blue.config(state='disabled')
-            logger.info("Blue LED: Pass")
-        else:
-            self.yes_button_blue.config(state='disabled')
-            logger.error("Blue LED: Failed")
+        self.update_label(self.result_rgb_blue_label, text, fg, font, self.no_button_blue, self.yes_button_blue, "Blue")
+        
+    def update_ir_led1_label(self, text, fg, font):
+        self.update_label(self.result_ir_led1, text, fg, font, self.no_button_ir_led1, self.yes_button_ir_led1, "IR LED 1")
+        
+    def update_ir_led2_label(self, text, fg, font):
+        self.update_label(self.result_ir_led2, text, fg, font, self.no_button_ir_led2, self.yes_button_ir_led2, "IR LED 2")
+        
+    def update_ir_led3_label(self, text, fg, font):
+        self.update_label(self.result_ir_led3, text, fg, font, self.no_button_ir_led3, self.yes_button_ir_led3, "IR LED 3")
+        
+    def update_ir_led4_label(self, text, fg, font):
+        self.update_label(self.result_ir_led4, text, fg, font, self.no_button_ir_led4, self.yes_button_ir_led4, "IR LED 4")
+        
+    def update_ir_led5_label(self, text, fg, font):
+        self.update_label(self.result_ir_led5, text, fg, font, self.no_button_ir_led5, self.yes_button_ir_led5, "IR LED 5")
+
 
     def load_test_script(self):
         ini_file_path = askopenfilename(title="Select .ini file", filetypes=[("INI files", "*.ini")])
@@ -847,8 +861,26 @@ class SerialCommunicationApp:
         #     port = config.get("flash", "port")
         #     baud = config.get("flash", "baud")
         #     logger.info(f"Port: {port}, Baud: {baud}")
-        #     self.flash_firmware(port, baud)
-        #     self.flash_cert(port) 
+        #     self.flashFw.export_esp_idf_path()
+        #     self.flash_s3_firmware(port, baud)
+            # self.flash_cert(port)
+        
+        if "flash" in config:
+            logger.info("Flashing firmware and certificate")
+            port = config.get("flash", "port")
+            baud = config.get("flash", "baud")
+            port1 = config.get("flash", "port1")
+            logger.info(f"Port: {port}, Baud: {baud}")
+            
+            # export the ESP-IDF path
+            self.flashFw.export_esp_idf_path()
+            
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future_s3 = executor.submit(self.flash_s3_firmware, port, baud)
+                future_h2 = executor.submit(self.flash_h2_firmware, port1, baud)
+
+                # Wait for both futures to complete
+                concurrent.futures.wait([future_s3, future_h2])
 
         if "factory" in config:
             logger.info("Entering factory mode")
@@ -961,12 +993,6 @@ class SerialCommunicationApp:
             if "manual_test_loop" in config and self.manual_test and self.factory_flag == False:
                 logger.debug(self.factory_flag)
                 self.enable_frame(self.group3_frame)
-                # self.yes_button_red.config(state='normal')
-                # self.yes_button_green.config(state='normal')
-                # self.yes_button_blue.config(state='normal')
-                # self.no_button_red.config(state='normal')
-                # self.no_button_green.config(state='normal')
-                # self.no_button_blue.config(state='normal')
                 logger.info("Starting manual test loop")             
                 redLed = config.get("manual_test_loop", "redLed")
                 greenLed = config.get("manual_test_loop", "greenLed")
@@ -1018,7 +1044,8 @@ class SerialCommunicationApp:
     def reset_tasks(self):
         logger.info("Resetting tasks")
         self.serialCom.close_serial_port()
-        self.result_flashing_fw_label.config(text="Not Yet", fg="black", font=("Helvetica", 10, "normal"))
+        self.result_flashing_fw_label.config(text="S3: Not Yet", fg="black", font=("Helvetica", 10, "normal"))
+        self.result_flashing_fw_h2_label.config(text="H2: Not Yet", fg="black", font=("Helvetica", 10, "normal"))
         self.result_flashing_cert_label.config(text="Not Yet", fg="black", font=("Helvetica", 10, "normal"))
         self.result_factory_mode_label.config(text="Not Yet", fg="black", font=("Helvetica", 10, "normal"))
         self.result_read_device_mac.config(text="Not Yet", fg="black", font=("Helvetica", 10, "normal"))
