@@ -12,10 +12,15 @@ logger = logging.getLogger(__name__)
 class FlashCert:
     def __init__(self, status_label):
         self.status_label = status_label
-
+        self.seleceted_order_number = None
+        
+    def process_order(self, order_number):
+        # Example: Use the order number in your logic
+        self.seleceted_order_number = order_number
+        logger.info(f"Processing order number: {self.seleceted_order_number}")
+        
     def get_certId(self):
         try:
-            # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
             with open('/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
                 for line in file:
                     if 'Matter Cert ID:' in line and 'Status: None' in line:
@@ -55,12 +60,10 @@ class FlashCert:
 
     def update_status(self, certId):
         try:
-            # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
-            with open ('/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            with open('/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
                 lines = file.readlines()
             
-            # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
-            with open ('/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
+            with open('/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
                 for line in lines:
                     if f'Matter Cert ID: {certId}' in line:
                         line = line.replace('Status: None', 'Status: 0')
@@ -71,8 +74,8 @@ class FlashCert:
             self.log_message(f"Error updating status in file: {e}")
 
     def flash_cert(self, port_var):
+        logger.info(f"{self.seleceted_order_number} selected")
         certId = self.get_certId()
-        # selected_port = port_var.get()  # Retrieve the selected port from the Combobox
         selected_port = port_var
         if certId:
             bin_path = self.get_bin_path(certId)

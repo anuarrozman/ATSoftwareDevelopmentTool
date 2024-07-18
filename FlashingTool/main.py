@@ -25,6 +25,7 @@ from components.manualTest.manualTest import ManualTestApp
 from components.uploadReport import uploadReport
 from components.loadTestScript.loadTestScript import LoadTestScript
 from components.aht20Sensor.aht20Sensor import SensorLogger
+from components.orderNumber.orderNumber import OrderUtils
 # from components.servoControl.servoControl import ServoController
 
 class SerialCommunicationApp:
@@ -65,6 +66,8 @@ class SerialCommunicationApp:
         self.add_version_label(version)  # Add version number here
 
     def initialize_components(self):
+        
+        file_path = '/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
         self.toolsBar = ToolsBar()
         self.flashFw = FlashFirmware(self.result_flashing_fw_label, self.result_flashing_fw_h2_label) #(self.receive_text)
         self.flashCert = FlashCert(self.result_flashing_cert_label) #(self.log_message)
@@ -73,6 +76,7 @@ class SerialCommunicationApp:
         self.sendEntry = WriteDeviceInfo(self.send_command, self.result_write_serialnumber, self.result_write_mtqr) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame, self.result_3_3v_test, self.result_5v_test)
         self.multimeter = Multimeter()
+        self.orderUtils = OrderUtils(file_path)
         # self.aht20Sensor = SensorLogger()
         # self.servo_controller = ServoController()
 
@@ -300,6 +304,26 @@ class SerialCommunicationApp:
             messagebox.showinfo("Success", "Report uploaded successfully!")
         else:
             messagebox.showerror("Error", "Failed to upload report.")
+            
+    def read_order_numbers(self, file_path):
+        order_numbers = []
+        with open(file_path, 'r') as file:
+            for line in file:
+                if 'order-no' in line:
+                    order_number = line.split('order-no: ')[1].split(',')[0].strip()
+                    if order_number not in order_numbers:
+                        order_numbers.append(order_number)
+        return order_numbers 
+        
+    def on_order_selected(self, event):
+        selected_order = event.widget.get()
+        # Use the selected_order directly or pass it to another function/class
+        self.process_selected_order(selected_order)
+        
+    def process_selected_order(self, selected_order):
+        logger.info(f"Selected order: {selected_order}")
+        flash_cert = FlashCert(None)  
+        flash_cert.process_order(selected_order)       
 
     def disable_frame(self, frame):
         for child in frame.winfo_children():
@@ -310,6 +334,10 @@ class SerialCommunicationApp:
             child.configure(state='normal')
 
     def create_widgets(self):
+        
+        file_path = '/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
+        order_numbers = self.read_order_numbers(file_path)
+
         # Create a frame for the canvas
         self.canvas_frame = tk.Frame(self.root)
         self.canvas_frame.pack(fill=tk.BOTH, expand=True)
@@ -477,17 +505,21 @@ class SerialCommunicationApp:
         self.retest_button.grid(row=0, column=5, padx=5, pady=5, sticky=tk.W)
 
         # Order Number
+        
+        file_path = '/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
+        order_utils = OrderUtils(file_path)
+        order_numbers = order_utils.get_order_numbers()
+        
         self.order_number_frame = tk.Frame(self.scrollable_frame)
         self.order_number_frame.grid(row=6, column=0, padx=10, pady=10, sticky=tk.W)
 
         self.order_number_label = tk.Label(self.order_number_frame, text="Order Number:")
         self.order_number_label.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
-
-        self.order_number_input = tk.Entry(self.order_number_frame)
-        self.order_number_input.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
-
-        self.submit_order_number = ttk.Button(self.order_number_frame, text="Submit", command=None)
-        self.submit_order_number.grid(row=0, column=2, padx=5, pady=5, sticky=tk.W)
+        
+        self.order_number_dropdown = tk.StringVar()
+        self.order_number_dropdown_list = ttk.Combobox(self.order_number_frame, textvariable=self.order_number_dropdown, values=order_numbers)
+        self.order_number_dropdown_list.bind("<<ComboboxSelected>>", self.on_order_selected)
+        self.order_number_dropdown_list.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
         
         # Group 1
         # Flash FW, Flash Cert, Factory Mode, Read Device MAC, Read Product Name, Write Device S/N, Write Device MTQR, 3.3V, 5V, Button Pressed, Sensor Temperature, Sensor Humidity
@@ -871,6 +903,7 @@ class SerialCommunicationApp:
             baud = config.get("flash", "baud")
             port1 = config.get("flash", "port1")
             logger.info(f"Port: {port}, Baud: {baud}")
+            self.flash_cert(port)
             
             # export the ESP-IDF path
             self.flashFw.export_esp_idf_path()
