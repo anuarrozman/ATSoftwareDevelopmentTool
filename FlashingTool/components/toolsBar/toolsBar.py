@@ -51,7 +51,8 @@ class ToolsBar:
                     serial_number VARCHAR(255),
                     mac_address VARCHAR(255),
                     matter_qr_string VARCHAR(255),
-                    status VARCHAR(255) DEFAULT NULL
+                    status VARCHAR(255) DEFAULT NULL,
+                    order_num INT
                 )
             """)
             conn.commit()
@@ -87,28 +88,59 @@ class ToolsBar:
             conn.close()
             
     def write_to_text_file(self, data):
-        file_path = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt"
+        # file_path = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt"
+        file_path = "/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt"
         if not os.path.exists(file_path):
             with open(file_path, 'w') as file:
                 logger.debug(f"Created new file: {file_path}")
         
         with open(file_path, 'a') as file:
+            # for device in data:
+            #     matter_cert_id = device.get("matter_cert_id", "N/A")
+            #     serial_number = device.get("serial_no", "N/A")  # Correct key to access serial number
+            #     mac_address = device.get("mac_address", "N/A")
+            #     matter_qr_string = device.get("matter_qr_string", "N/A")
+            #     status = device.get("status", "N/A")
+            #     order_num = device.get("order_num", "N/A")
+            #     file.write(f"Matter Cert ID: {matter_cert_id}, Serial: {serial_number}, MAC Address: {mac_address}, Matter QR String: {matter_qr_string}, Status: {status}, Order Number: {order_num}\n")
+
             for device in data:
-                matter_cert_id = device.get("matter_cert_id", "N/A")
-                serial_number = device.get("serial_no", "N/A")  # Correct key to access serial number
-                mac_address = device.get("mac_address", "N/A")
-                matter_qr_string = device.get("matter_qr_string", "N/A")
-                status = device.get("status", "N/A")
-                file.write(f"Matter Cert ID: {matter_cert_id}, Serial: {serial_number}, MAC Address: {mac_address}, Matter QR String: {matter_qr_string}, Status: {status}\n")
+                order_no = device.get("order-no", "N/A")
+                mac_address = device.get("mac-address", "N/A")
+                serial_id = device.get("serial-id", "N/A")
+                cert_id = device.get("cert-id", "N/A")
+                esp_secure_cert_partition = device.get("esp-secure-cert-partition", "N/A")
+                commissionable_data_provider_partition = device.get("commissionable-data-provider-partition", "N/A")
+                qrcode = device.get("qrcode", "N/A")
+                manualcode = device.get("manualcode", "N/A")
+                discriminator = device.get("discriminator", "N/A")
+                passcode = device.get("passcode", "N/A")
+                file.write(f"order-no: {order_no}, mac-address: {mac_address}, serial-id: {serial_id}, cert-id: {cert_id}, esp-secure-cert-partition: {esp_secure_cert_partition}, commissionable-data-provider-partition: {commissionable_data_provider_partition}, qrcode: {qrcode}, manualcode: {manualcode}, discriminator: {discriminator}, passcode: {passcode}\n")
+                
         
         logger.info(f"Data written to {file_path} successfully!")
         
     def display_data(self, data):
+        # for device in data:
+        #     matter_cert_id = device.get("matter_cert_id", "N/A")
+        #     serial_number = device.get("serial_number", "N/A")  # Correct field name
+        #     matter_qr_string = device.get("matter_qr_string", "N/A")
+        #     status = device.get("status", "N/A")
+        #     order_num = device.get("order_num", "N/A")
+        #     logger.info(f"Matter Cert ID: {matter_cert_id}, Serial: {serial_number}, Matter QR String: {matter_qr_string}, Status: {status}, Order Number: {order_num}")
         for device in data:
-            matter_cert_id = device.get("matter_cert_id", "N/A")
-            serial_number = device.get("serial_number", "N/A")  # Correct field name
-            matter_qr_string = device.get("matter_qr_string", "N/A")
-            status = device.get("status", "N/A")
-            logger.info(f"Matter Cert ID: {matter_cert_id}, Serial: {serial_number}, Matter QR String: {matter_qr_string}, Status: {status}")
+            order_no = device.get("order-no", "N/A")
+            mac_address = device.get("mac-address", "N/A")
+            serial_id = device.get("serial-id", "N/A")
+            cert_id = device.get("cert-id", "N/A")
+            esp_secure_cert_partition = device.get("esp-secure-cert-partition", "N/A")
+            commissionable_data_provider_partition = device.get("commissionable-data-provider-partition", "N/A")
+            qrcode = device.get("qrcode", "N/A")
+            manualcode = device.get("manualcode", "N/A")
+            discriminator = device.get("discriminator", "N/A")
+            passcode = device.get("passcode", "N/A")
+            logger.info(f"order-no: {order_no}, mac-address: {mac_address}, serial-id: {serial_id}, cert-id: {cert_id}, esp-secure-cert-partition: {esp_secure_cert_partition}, commissionable-data-provider-partition: {commissionable_data_provider_partition}, qrcode: {qrcode}, manualcode: {manualcode}, discriminator: {discriminator}, passcode: {passcode}")
+
+
         logger.info("Data downloaded successfully!")
 

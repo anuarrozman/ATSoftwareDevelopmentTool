@@ -18,7 +18,8 @@ class WriteDeviceInfo:
 
     def get_serial_number_from_text_file(self):
         try:
-            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            with open('/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
                 lines = file.readlines()
                 for index, line in enumerate(lines):
                     if 'Serial:' in line and 'Status: 1' in line:
@@ -32,12 +33,14 @@ class WriteDeviceInfo:
 
     def update_status_in_text_file_serial_number(self, index, old_line):
         try:
-            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            with open('/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
                 lines = file.readlines()
 
             lines[index] = old_line.replace('Status: 1', 'Status: 2')
 
-            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
+            # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
+            with open('/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
                 file.writelines(lines)
 
             logger.info(f"Updated status of line {index + 1} to 2.")
@@ -52,14 +55,17 @@ class WriteDeviceInfo:
             self.send_command(command)
             logger.info(f"Sent serial number command: {command}")
             self.update_status_in_text_file_serial_number(index, line)
-            self.status_label1.config(text="Success")
+            # self.status_label1.config(text="Success")
+            self.update_status_label1("Pass", "green", ("Helvetica", 12, "bold"))
         else:
             logger.error("Failed to send serial number command: Serial number not found")
-            self.status_label1.config(text="Failed")
+            # self.status_label1.config(text="Failed")
+            self.update_status_label1("Failed", "red", ("Helvetica", 12, "bold"))
 
     def get_mtqr_from_text_file(self):
         try:
-            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            with open('/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
                 lines = file.readlines()
                 for index, line in enumerate(lines):
                     if 'Matter QR String:' in line and 'Status: 2' in line:
@@ -73,12 +79,14 @@ class WriteDeviceInfo:
 
     def update_status_in_text_file_mtqr(self, index, old_line):
         try:
-            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            with open('/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
                 lines = file.readlines()
 
             lines[index] = old_line.replace('Status: 2', 'Status: 3')
 
-            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
+            # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
+            with open('/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
                 file.writelines(lines)
 
             logger.info(f"Updated status of line {index + 1} to 3.")
@@ -93,10 +101,19 @@ class WriteDeviceInfo:
             self.send_command(command)
             logger.info(f"Sent MTQR command: {command}")
             self.update_status_in_text_file_mtqr(index, line)
-            self.status_label2.config(text="Success")
+            # self.status_label2.config(text="Success")
+            self.update_status_label2("Pass", "green", ("Helvetica", 12, "bold"))
         else:
             logger.error("Failed to send MTQR command: MTQR not found")
-            self.status_label2.config(text="Failed")
+            # self.status_label2.config(text="Failed")
+            self.update_status_label2("Failed", "red", ("Helvetica", 12, "bold"))
+
+    def update_status_label1(self, message, fg, font):
+        self.status_label1.config(text=message, fg=fg, font=font)  # Update the status label with the message
+
+    def update_status_label2(self, message, fg, font):
+        self.status_label2.config(text=message, fg=fg, font=font)  # Update the status label with the message
+
 
 # Assuming send_command is a function that sends a command to the device
 def send_command(command):
