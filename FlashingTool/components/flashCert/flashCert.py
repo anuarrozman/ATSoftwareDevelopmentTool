@@ -36,7 +36,7 @@ class FlashCert:
             if selected_port:
                 logger.info(f"Flashing certificate with cert-id: {cert_file_path} on port {selected_port}")
                 self.certify(cert_file_path, selected_port)
-                # self.update_status(cert_file_path)
+                self.update_status(cert_file_path)
                 # self.create_folder()
                 # self.save_cert_id_to_ini(os.path.join(os.path.dirname(__file__), self.get_serial_number()), cert_file_path)
                 self.log_message(f"Cert {cert_file_path} flashed successfully.")
