@@ -54,9 +54,9 @@ class UpdateDB:
 
                 # Update the MAC address and status in the text file where status is 0
                 for line in lines:
-                    if 'MAC Address:' in line and 'Status: 0' in line:
+                    if 'mac-address:' in line and 'Status: 0' in line:
                         line_parts = line.split(',')
-                        line_parts[2] = f" MAC Address: {mac_address}"
+                        line_parts[2] = f" mac-address: {mac_address}"
                         line_parts[4] = " Status: 1\n"
                         updated_line = ','.join(line_parts)
                         updated_lines.append(updated_line)
