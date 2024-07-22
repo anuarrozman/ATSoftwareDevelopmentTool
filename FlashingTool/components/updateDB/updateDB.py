@@ -43,44 +43,42 @@ class UpdateDB:
                 connection.close()
                 logger.info("MySQL connection closed.")
 
-    def update_text_file(self, mac_address, cert_id):
+    def update_text_file(self, mac_address):
+        file_path = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
+
         try:
-            # Open the text file for reading and writing
-            # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r+') as file:
-            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r+') as file:
+            with open(file_path, 'r+') as file:
                 lines = file.readlines()
-                found = False
                 updated_lines = []
+                found = False
 
-                # Update the MAC address and status in the text file where status is 0
                 for line in lines:
-                    if cert_id:
-                        if 'mac-address:' in line:
-                            updated_line = line.replace('mac-address:', f'mac-address: {mac_address}')
-                            updated_lines.append(updated_line)
-                            found = True
-                        else:
-                            updated_lines.append(line)
-                        # if 'mac-address:' in line and 'Status: 0' in line:
-                        #     line_parts = line.split(',')
-                        #     line_parts[2] = f" mac-address: {mac_address}"
-                        #     line_parts[4] = " Status: 1\n"
-                        #     updated_line = ','.join(line_parts)
-                        #     updated_lines.append(updated_line)
-                        #     found = True
-                        # else:
-                        #     updated_lines.append(line)
+                    if 'mac-address:' in line and 'Status:' in line and 'Status: 0' in line:
+                        line_parts = line.split(',')
+                        # Assuming the order of parts and number of parts is fixed
+                        for i, part in enumerate(line_parts):
+                            if 'mac-address:' in part:
+                                line_parts[i] = f" mac-address: {mac_address}"
+                            if 'Status:' in part:
+                                line_parts[i] = " Status: 1\n"
+                        updated_line = ','.join(line_parts)
+                        updated_lines.append(updated_line)
+                        found = True
+                    else:
+                        updated_lines.append(line)
 
-                # If no lines with Status: 0 were found, raise IOError
                 if not found:
                     raise IOError("No lines with Status: 0 found in the text file.")
 
-                # Write the updated lines back to the text file
                 file.seek(0)
                 file.writelines(updated_lines)
                 file.truncate()
 
                 logger.info(f"MAC address and status updated in the text file where status was 0: {mac_address}")
+        except IOError as e:
+            logger.error(f"IOError occurred: {e}")
+        except Exception as e:
+            logger.error(f"An unexpected error occurred: {e}")
 
         except IOError as error:
             logger.error(f"Failed to update text file: {error}")
