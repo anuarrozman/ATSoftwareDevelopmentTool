@@ -24,7 +24,7 @@ class FlashCert:
             logger.debug(f"Cert ID {cert_id} has already been used.")
             return False
 
-        cert_dir = '/usr/app/ATSoftwareDevelopmentTool/FlashingTool/certs'
+        cert_dir = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/certs'
         cert_file_path = os.path.join(cert_dir, f"{cert_id}.cert")
 
         # Check if the file exists
@@ -156,7 +156,7 @@ class FlashCert:
 
     def get_bin_path(self, certId):
         # for root, dirs, files in os.walk("/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/certs"):
-        for root, dirs, files in os.walk("/usr/app/ATSoftwareDevelopmentTool/FlashingTool/certs"):
+        for root, dirs, files in os.walk("/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/certs"):
             for file in files:
                 if file.endswith(".bin") and certId in file:
                     return os.path.join(root, file)  # Return the path of the .bin file
