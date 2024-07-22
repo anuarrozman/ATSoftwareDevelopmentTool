@@ -116,13 +116,15 @@ class FlashCert:
             logger.error(f"Unexpected error: {e}")
 
     def update_status(self, certId):
+        file_path = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
+
         try:
-            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            with open(file_path, 'r') as file:
                 lines = file.readlines()
             
-            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
+            with open(file_path, 'w') as file:
                 for line in lines:
-                    if f'cert-id: {certId}' in line:
+                    if f'cert-id: {certId}' in line and 'Status: None' in line:
                         logger.debug(f"Updating status to '0' for certId {certId}")
                         line = line.replace('Status: None', 'Status: 0')
                     file.write(line)
@@ -130,6 +132,8 @@ class FlashCert:
             self.log_message(f"Status updated to '0' for certId {certId} in cert_info.txt.")
         except IOError as e:
             self.log_message(f"Error updating status in file: {e}")
+        except Exception as e:
+            self.log_message(f"An unexpected error occurred: {e}")
 
     def flash_cert(self, port_var):
         certId = self.get_certId()
