@@ -123,6 +123,7 @@ class FlashCert:
             with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
                 for line in lines:
                     if f'cert-id: {certId}' in line:
+                        logger.debug(f"Updating status to '0' for certId {certId}")
                         line = line.replace('Status: None', 'Status: 0')
                     file.write(line)
             
