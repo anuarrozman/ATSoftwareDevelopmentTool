@@ -22,8 +22,8 @@ class WriteDeviceInfo:
             with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
                 lines = file.readlines()
                 for index, line in enumerate(lines):
-                    if 'Serial:' in line and 'Status: 1' in line:
-                        serial_number = line.split('Serial:')[1].split(',')[0].strip()
+                    if 'serial-id:' in line and 'Status: 1' in line:
+                        serial_number = line.split('serial-id:')[1].split(',')[0].strip()
                         return serial_number, index, line
                 logger.error("No serial found with status 1 in the text file.")
                 return None, None, None
@@ -68,8 +68,8 @@ class WriteDeviceInfo:
             with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
                 lines = file.readlines()
                 for index, line in enumerate(lines):
-                    if 'Matter QR String:' in line and 'Status: 2' in line:
-                        mtqr = line.split('Matter QR String:')[1].split(',')[0].strip()
+                    if 'qrcode:' in line and 'Status: 2' in line:
+                        mtqr = line.split('qrcode:')[1].split(',')[0].strip()
                         return mtqr, index, line
                 logger.error("No MTQR found with status 2 in the text file.")
                 return None, None, None
