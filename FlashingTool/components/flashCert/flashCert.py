@@ -57,7 +57,7 @@ class FlashCert:
         
     def get_certId(self):
         try:
-            with open('/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
                 for line in file:
                     if 'Matter Cert ID:' in line and 'Status: None' in line:
                         certId = line.split('Matter Cert ID: ')[1].split(',')[0].strip()
@@ -117,10 +117,10 @@ class FlashCert:
 
     def update_status(self, certId):
         try:
-            with open('/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
                 lines = file.readlines()
             
-            with open('/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
+            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
                 for line in lines:
                     if f'Matter Cert ID: {certId}' in line:
                         line = line.replace('Status: None', 'Status: 0')
