@@ -9,15 +9,51 @@ logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+used_cert_ids = set()  # Track used cert-ids
 class FlashCert:
     def __init__(self, status_label):
         self.status_label = status_label
         self.seleceted_order_number = None
         
-    def process_order(self, order_number):
-        # Example: Use the order number in your logic
-        self.seleceted_order_number = order_number
-        logger.info(f"Processing order number: {self.seleceted_order_number}")
+    def get_cert_ids_for_order(self, orders, selected_order_no):
+        cert_ids = [order['cert-id'] for order in orders if order['order-no'] == selected_order_no]
+        return cert_ids
+
+    def flash_certificate(self, cert_id, selected_port):
+        if cert_id in used_cert_ids:
+            logger.debug(f"Cert ID {cert_id} has already been used.")
+            return False
+
+        cert_dir = '/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/certs'
+        cert_file_path = os.path.join(cert_dir, f"{cert_id}.cert")
+
+        # Check if the file exists
+        if not os.path.isfile(cert_file_path):
+            logger.error(f"Certificate file {cert_file_path} does not exist.")
+            return False
+        
+        if cert_file_path:
+            if selected_port:
+                logger.info(f"Flashing certificate with cert-id: {cert_file_path} on port {selected_port}")
+                self.certify(cert_file_path, selected_port)
+                # self.update_status(cert_file_path)
+                # self.create_folder()
+                # self.save_cert_id_to_ini(os.path.join(os.path.dirname(__file__), self.get_serial_number()), cert_file_path)
+                self.log_message(f"Cert {cert_file_path} flashed successfully.")
+                self.update_status_label("Completed", "green", ("Helvetica", 12, "bold"))
+            else:
+                logger.error("No port selected. Please select a port before flashing.")
+                self.update_status_label("Failed", "red", ("Helvetica", 12, "bold"))
+        else:
+            logger.error(f"No .bin file found for certId {cert_file_path}.")
+            self.update_status_label("Failed", "red", ("Helvetica", 12, "bold"))
+            
+        # Simulate flashing the certificate
+        used_cert_ids.add(cert_file_path)
+        return True
+
+    def get_remaining_cert_ids(self, cert_ids):
+        return [cert_file_path for cert_file_path in cert_ids if cert_file_path not in used_cert_ids]
         
     def get_certId(self):
         try:
@@ -53,10 +89,31 @@ class FlashCert:
         self.log_message(f"CertId {certId} saved to {os.path.join(directory, 'cert_info.ini')}")
 
     def certify(self, bin_path, selected_port):
+        command = (
+            f"openocd -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg "
+            f"--command 'program_esp {bin_path} 0x10000 verify exit'"
+        )
+        
         try:
-            subprocess.run(["esptool.py", "-p", selected_port, "write_flash", "0x10000", bin_path], check=True)
+            # Open subprocess with stdout redirected to PIPE
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            
+            # Read stdout line by line and log in real-time
+            for line in iter(process.stdout.readline, ''):
+                logger.info(line.strip())
+                if "** Verify OK **" in line:
+                    process.terminate()
+                    logger.info("Cert Flashing Complete")
+                    break
+            
+            # Ensure the process has terminated
+            process.stdout.close()
+            process.wait()
+            
         except subprocess.CalledProcessError as e:
-            self.log_message(f"Error flashing cert: {e}")
+            logger.error(f"Error running openocd: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
 
     def update_status(self, certId):
         try:
@@ -74,7 +131,6 @@ class FlashCert:
             self.log_message(f"Error updating status in file: {e}")
 
     def flash_cert(self, port_var):
-        logger.info(f"{self.seleceted_order_number} selected")
         certId = self.get_certId()
         selected_port = port_var
         if certId:

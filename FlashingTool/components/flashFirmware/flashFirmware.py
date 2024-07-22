@@ -10,9 +10,10 @@ logger = logging.getLogger(__name__)
 
 class FlashFirmware:
     
-    def __init__(self, status_label, status_label_1):
+    def __init__(self, status_label, status_label_1, status_label_2):
         self.status_label = status_label
         self.status_label_1 = status_label_1
+        self.status_label_2 = status_label_2
         self.log_capture_string = io.StringIO()
         self.ch = logging.StreamHandler(self.log_capture_string)
         self.ch.setLevel(logging.INFO)
@@ -103,7 +104,7 @@ class FlashFirmware:
         #     logger.error(f"An unexpected error occurred: {e}")
         
 
-        command = f"openocd -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg --command 'program {ota_data_initial_path} 0x1e000' --command 'program {partition_table_path} 0xc000' --command 'program {boot_loader_path} 0x0' --command 'program {fw_path} 0x200000' "
+        command = f"openocd -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg --command 'program_esp {ota_data_initial_path} 0x1e000' --command 'program_esp {partition_table_path} 0xc000' --command 'program_esp {boot_loader_path} 0x0' --command 'program_esp {fw_path} 0x200000 verify exit' "
         # command = f"openocd -s /home/anuarrozman/esp/openocd-esp32/share/openocd/scripts -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg --command 'program {ota_data_initial_path} 0x1e000' --command 'program {partition_table_path} 0xc000' --command 'program {boot_loader_path} 0x0' --command 'program {fw_path} 0x200000' "
 
 
@@ -114,7 +115,7 @@ class FlashFirmware:
             # Read stdout line by line and log in real-time
             for line in iter(process.stdout.readline, ''):
                 logger.info(line.strip())
-                if "Listening on port 4444 for telnet connections" in line:
+                if "** Verify OK **" in line:
                     # process.send_signal(signal.SIGINT)
                     process.terminate()
                     logger.info("Firmware Flashing Complete")
@@ -196,10 +197,38 @@ class FlashFirmware:
             self.update_status_label1("Completed", "green", ("Helvetica", 12, "bold"))
         else:
             self.update_status_label1("Failed", "red", ("Helvetica", 12, "bold"))
+            
+    def get_device_mac_address(self, port_var):
+        selected_port = port_var
+        command = f"esptool.py -p {selected_port} read_mac"
+        
+        try:
+            # Open subprocess with stdout redirected to PIPE
+            logger.info("Reading MAC Address...")
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            
+            # Read stdout line by line and log in real-time
+            for line in iter(process.stdout.readline, ''):
+                logger.info(line.strip())
+                if "MAC:" in line:
+                    mac_address = line.split("MAC:")[1].strip()
+                    self.update_status_label2(f"{mac_address}", "black", ("Helvetica", 12, "bold"))
+                    logger.info(f"MAC Address: {mac_address}")
+                    break
+            
+            # Ensure the process has terminated
+            process.stdout.close()
+            process.wait()
+            
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Error running esptool.py: {e}")
 
     def update_status_label(self, message, fg, font):
         self.status_label.config(text=message, fg=fg, font=font)  # Update the status label with the message
         
     def update_status_label1(self, message, fg, font):
         self.status_label_1.config(text=message, fg=fg, font=font)
+        
+    def update_status_label2(self, message, fg, font):
+        self.status_label_2.config(text=message, fg=fg, font=font)
 

@@ -25,8 +25,15 @@ from components.manualTest.manualTest import ManualTestApp
 from components.uploadReport import uploadReport
 from components.loadTestScript.loadTestScript import LoadTestScript
 from components.aht20Sensor.aht20Sensor import SensorLogger
-from components.orderNumber.orderNumber import OrderUtils
 # from components.servoControl.servoControl import ServoController
+from components.processOrderNumber.processOrderNumber import get_order_numbers
+from components.readOrderFile.readOrderFile import parse_order_file
+from components.rebootPinS3.rebootPinS3 import RebootPinS3
+
+
+file_path = '/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'  # Specify the correct path to your text file
+orders = parse_order_file(file_path)
+order_numbers = get_order_numbers(orders)
 
 class SerialCommunicationApp:
     def __init__(self, root):
@@ -46,6 +53,9 @@ class SerialCommunicationApp:
         self.long_delay = 5
         self.manual_test = False
         self.factory_flag = None
+        self.used_cert_ids = set()
+        self.selected_cert_id = None
+
 
         # Create GUI elements
         self.initialize_gui()
@@ -69,14 +79,14 @@ class SerialCommunicationApp:
         
         file_path = '/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
         self.toolsBar = ToolsBar()
-        self.flashFw = FlashFirmware(self.result_flashing_fw_label, self.result_flashing_fw_h2_label) #(self.receive_text)
+        self.flashFw = FlashFirmware(self.result_flashing_fw_label, self.result_flashing_fw_h2_label, self.result_mac_address_label) #(self.receive_text)
         self.flashCert = FlashCert(self.result_flashing_cert_label) #(self.log_message)
         self.serialCom = SerialCom(self.result_factory_mode_label, self.atbeam_temp_value, self.atbeam_humid_value, self.result_read_device_mac, self.result_button_label, self.result_ir_def_label, self.result_read_prod_name, self.read_prod_name, self.read_device_mac, self.read_device_sn, self.read_device_mtqr) #self.atbeam_sensor_temp_update) #(self.receive_text)
         
         self.sendEntry = WriteDeviceInfo(self.send_command, self.result_write_serialnumber, self.result_write_mtqr) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame, self.result_3_3v_test, self.result_5v_test)
         self.multimeter = Multimeter()
-        self.orderUtils = OrderUtils(file_path)
+        self.rebootPin = RebootPinS3()
         # self.aht20Sensor = SensorLogger()
         # self.servo_controller = ServoController()
 
@@ -317,14 +327,75 @@ class SerialCommunicationApp:
         
     def on_order_selected(self, event):
         selected_order = event.widget.get()
-        # Use the selected_order directly or pass it to another function/class
-        self.process_selected_order(selected_order)
+        cert_ids = self.flashCert.get_cert_ids_for_order(orders, selected_order)
+        remaining_cert_ids = self.flashCert.get_remaining_cert_ids(cert_ids)
         
-    def process_selected_order(self, selected_order):
-        logger.info(f"Selected order: {selected_order}")
-        flash_cert = FlashCert(None)  
-        flash_cert.process_order(selected_order)       
+        if remaining_cert_ids:
+            self.cert_id_dropdown['values'] = remaining_cert_ids
+            self.cert_id_dropdown.grid(row=0, column=4, padx=5, pady=5, sticky=tk.W)
+        else:
+            self.cert_id_label.config(text="No Cert IDs available for this order.")
+            self.cert_id_dropdown.pack_forget()
 
+        logger.info(f"Selected order: {selected_order}")
+        
+    def read_port_from_config(self):
+        ini_file_name = "testscript.ini"
+        specified_directory = "/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool"
+
+        # Check in the specified directory
+        ini_file_path = os.path.join(specified_directory, ini_file_name)
+
+        config = configparser.ConfigParser()
+        config.read(ini_file_path)
+        return config.get('flash', 'port', fallback=None)
+    
+    def flashCertificate(self, cert_id, selected_port):
+        self.flashCert.flash_certificate(cert_id, selected_port)
+
+    # def on_select_cert_id(self, event):
+    #     selected_cert_id = event.widget.get()
+        
+    #     if selected_cert_id:
+    #         if selected_cert_id not in self.used_cert_ids:
+    #             # Flash the certificate
+    #             self.flashCertificate(selected_cert_id, "/dev/ttyACM0")
+                
+    #             # Mark the cert_id as used
+    #             self.used_cert_ids.add(selected_cert_id)
+                
+    #             # Update remaining cert_ids
+    #             remaining_cert_ids = self.flashCert.get_remaining_cert_ids(
+    #                 self.flashCert.get_cert_ids_for_order(orders, self.order_number_dropdown.get())
+    #             )
+    #             remaining_cert_ids = [cert_id for cert_id in remaining_cert_ids if cert_id not in self.used_cert_ids]
+    #             self.cert_id_dropdown['values'] = remaining_cert_ids
+                
+    #             # Update status label
+    #             self.cert_status_label.config(text=f"Cert {selected_cert_id} flashed.")
+                
+    #         else:
+    #             # If the cert_id has already been used
+    #             self.cert_status_label.config(text=f"Cert {selected_cert_id} has already been used.")
+    #     else:
+    #         # If no cert_id is selected
+    #         self.cert_status_label.config(text=f"Failed to flash cert {selected_cert_id}.")
+    
+    def on_select_cert_id(self, event):
+        # Retrieve the selected certificate ID from the dropdown
+        selected_cert_id = event.widget.get()
+        
+        if selected_cert_id:
+            # Store the selected certificate ID in an instance variable
+            self.selected_cert_id = selected_cert_id
+            
+            # Update status label
+            self.cert_status_label.config(text=f"Cert {selected_cert_id} selected.")
+        else:
+            # If no certificate ID is selected
+            self.cert_status_label.config(text="No certificate selected.")
+
+                    
     def disable_frame(self, frame):
         for child in frame.winfo_children():
             child.configure(state='disabled')
@@ -504,12 +575,10 @@ class SerialCommunicationApp:
         self.retest_button = ttk.Button(self.control_frame, text="Retest", command=None)
         self.retest_button.grid(row=0, column=5, padx=5, pady=5, sticky=tk.W)
 
+
+        cert_id_var = tk.StringVar()
+        
         # Order Number
-        
-        file_path = '/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
-        order_utils = OrderUtils(file_path)
-        order_numbers = order_utils.get_order_numbers()
-        
         self.order_number_frame = tk.Frame(self.scrollable_frame)
         self.order_number_frame.grid(row=6, column=0, padx=10, pady=10, sticky=tk.W)
 
@@ -520,6 +589,18 @@ class SerialCommunicationApp:
         self.order_number_dropdown_list = ttk.Combobox(self.order_number_frame, textvariable=self.order_number_dropdown, values=order_numbers)
         self.order_number_dropdown_list.bind("<<ComboboxSelected>>", self.on_order_selected)
         self.order_number_dropdown_list.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
+        
+        self.selected_order_no_label = tk.Label(self.order_number_frame, text="")
+        self.selected_order_no_label.grid(row=0, column=2, padx=5, pady=5, sticky=tk.W)
+        
+        self.cert_id_label = tk.Label(self.order_number_frame, text="Select Cert ID:")
+        self.cert_id_label.grid(row=0, column=3, padx=5, pady=5, sticky=tk.W)
+        
+        self.cert_id_dropdown = ttk.Combobox(self.order_number_frame, textvariable=cert_id_var)
+        self.cert_id_dropdown.bind("<<ComboboxSelected>>", self.on_select_cert_id)
+        
+        self.cert_status_label = tk.Label(self.order_number_frame, text="")
+        self.cert_status_label.grid(row=0, column=5, padx=5, pady=5, sticky=tk.W)
         
         # Group 1
         # Flash FW, Flash Cert, Factory Mode, Read Device MAC, Read Product Name, Write Device S/N, Write Device MTQR, 3.3V, 5V, Button Pressed, Sensor Temperature, Sensor Humidity
@@ -537,6 +618,12 @@ class SerialCommunicationApp:
         
         self.result_flashing_fw_h2_label = tk.Label(self.group1_frame, text="H2: Not Yet")
         self.result_flashing_fw_h2_label.grid(row=1, column=2, padx=5, pady=5, sticky=tk.W)
+        
+        self.read_mac_address_label = tk.Label(self.group1_frame, text="MAC Address: ")
+        self.read_mac_address_label.grid(row=1, column=3, padx=5, pady=5, sticky=tk.W)
+        
+        self.result_mac_address_label = tk.Label(self.group1_frame, text="Not Yet")
+        self.result_mac_address_label.grid(row=1, column=4, padx=5, pady=5, sticky=tk.W)
         
         self.status_flashing_cert = tk.Label(self.group1_frame, text="Flashing Cert: ")
         self.status_flashing_cert.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
@@ -903,7 +990,11 @@ class SerialCommunicationApp:
             baud = config.get("flash", "baud")
             port1 = config.get("flash", "port1")
             logger.info(f"Port: {port}, Baud: {baud}")
-            self.flash_cert(port)
+            self.flashFw.get_device_mac_address(port)
+            self.flashCertificate(self.selected_cert_id, "/dev/ttyACM0")
+
+            time.sleep(10)
+            
             
             # export the ESP-IDF path
             self.flashFw.export_esp_idf_path()
@@ -915,7 +1006,10 @@ class SerialCommunicationApp:
                 # Wait for both futures to complete
                 concurrent.futures.wait([future_s3, future_h2])
 
+
         if "factory" in config:
+            self.rebootPin.reboot_esp32()
+            self.rebootPin.cleanup()
             logger.info("Entering factory mode")
             try:
                 port = config.get("factory", "port")

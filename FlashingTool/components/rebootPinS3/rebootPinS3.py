@@ -32,6 +32,11 @@ class RebootPinS3:
     def cleanup(self):
         GPIO.cleanup()
 
+
+if __name__ == "__main__":
+    reboot_pin = RebootPinS3()
+    reboot_pin.reboot_esp32()
+    reboot_pin.cleanup()
 # Example usage
 # reboot_pin = RebootPinS3()
 # reboot_pin.reboot_esp32()
