@@ -110,7 +110,7 @@ class SerialCom:
         self.mac_address_variable = mac_address
         logger.info(f"MAC Address: {mac_address}")
         
-        self.update_db.update_text_file(self.mac_address_variable)
+        self.update_db.update_text_file(self.mac_address_variable, cert_id="Polyaire-DAC-0x146D-0x0001-A09000500-Cert")
         # self.status_label3.config(text="Success")
         self.update_status_label3("Pass", "green", ("Helvetica", 12, "bold"))
         self.update_status_label8(f"{self.mac_address_variable}", "black", ("Helvetica", 12, "italic"))

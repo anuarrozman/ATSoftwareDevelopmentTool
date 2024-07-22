@@ -43,7 +43,7 @@ class UpdateDB:
                 connection.close()
                 logger.info("MySQL connection closed.")
 
-    def update_text_file(self, mac_address):
+    def update_text_file(self, mac_address, cert_id):
         try:
             # Open the text file for reading and writing
             # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r+') as file:
@@ -54,15 +54,22 @@ class UpdateDB:
 
                 # Update the MAC address and status in the text file where status is 0
                 for line in lines:
-                    if 'mac-address:' in line and 'Status: 0' in line:
-                        line_parts = line.split(',')
-                        line_parts[2] = f" mac-address: {mac_address}"
-                        line_parts[4] = " Status: 1\n"
-                        updated_line = ','.join(line_parts)
-                        updated_lines.append(updated_line)
-                        found = True
-                    else:
-                        updated_lines.append(line)
+                    if cert_id:
+                        if 'mac-address:' in line:
+                            updated_line = line.replace('mac-address:', f'mac-address: {mac_address}')
+                            updated_lines.append(updated_line)
+                            found = True
+                        else:
+                            updated_lines.append(line)
+                        # if 'mac-address:' in line and 'Status: 0' in line:
+                        #     line_parts = line.split(',')
+                        #     line_parts[2] = f" mac-address: {mac_address}"
+                        #     line_parts[4] = " Status: 1\n"
+                        #     updated_line = ','.join(line_parts)
+                        #     updated_lines.append(updated_line)
+                        #     found = True
+                        # else:
+                        #     updated_lines.append(line)
 
                 # If no lines with Status: 0 were found, raise IOError
                 if not found:
