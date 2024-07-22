@@ -992,7 +992,7 @@ class SerialCommunicationApp:
             port1 = config.get("flash", "port1")
             logger.info(f"Port: {port}, Baud: {baud}")
             self.flashFw.get_device_mac_address(port)
-            self.flashCertificate(self.selected_cert_id, "/dev/ttyAMA0")
+            self.flashCertificate(self.selected_cert_id, "/dev/ttyACM0")
 
             time.sleep(10)
             
