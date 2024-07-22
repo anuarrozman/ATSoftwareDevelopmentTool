@@ -18,7 +18,6 @@ class WriteDeviceInfo:
 
     def get_serial_number_from_text_file(self):
         try:
-            # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
             with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
                 lines = file.readlines()
                 for index, line in enumerate(lines):
@@ -64,7 +63,6 @@ class WriteDeviceInfo:
 
     def get_mtqr_from_text_file(self):
         try:
-            # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
             with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
                 lines = file.readlines()
                 for index, line in enumerate(lines):
