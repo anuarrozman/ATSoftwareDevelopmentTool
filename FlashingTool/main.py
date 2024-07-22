@@ -341,7 +341,7 @@ class SerialCommunicationApp:
         
     def read_port_from_config(self):
         ini_file_name = "testscript.ini"
-        specified_directory = "/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool"
+        specified_directory = "/usr/app/ATSoftwareDevelopmentTool/FlashingTool"
 
         # Check in the specified directory
         ini_file_path = os.path.join(specified_directory, ini_file_name)
@@ -961,7 +961,7 @@ class SerialCommunicationApp:
         self.stop_event.clear()  # Clear the stop event before starting the tasks
 
         ini_file_name = "testscript.ini"
-        specified_directory = "/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool"
+        specified_directory = "/usr/app/ATSoftwareDevelopmentTool/FlashingTool"
 
         # Check in the specified directory
         ini_file_path = os.path.join(specified_directory, ini_file_name)
@@ -1030,7 +1030,7 @@ class SerialCommunicationApp:
         logger.info("Starting test2")
 
         ini_file_name = "testscript.ini"
-        specified_directory = "/home/anuarrozman/FactoryApp_Dev/ATSoftwareDevelopmentTool/FlashingTool"
+        specified_directory = "/usr/app/ATSoftwareDevelopmentTool/FlashingTool"
 
         # Check in the specified directory
         ini_file_path = os.path.join(specified_directory, ini_file_name)
