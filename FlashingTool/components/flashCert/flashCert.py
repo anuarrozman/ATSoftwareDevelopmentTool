@@ -24,8 +24,8 @@ class FlashCert:
             logger.debug(f"Cert ID {cert_id} has already been used.")
             return False
 
-        # cert_dir = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/certs'
-        cert_dir = '/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/certs'
+        cert_dir = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/certs'
+        # cert_dir = '/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/certs'
         cert_file_path = os.path.join(cert_dir, f"{cert_id}.cert")
 
         # Check if the file exists
@@ -58,8 +58,8 @@ class FlashCert:
         
     def get_certId(self):
         try:
-            # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
-            with open('/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            # with open('/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
                 for line in file:
                     if 'Matter Cert ID:' in line and 'Status: None' in line:
                         certId = line.split('Matter Cert ID: ')[1].split(',')[0].strip()
