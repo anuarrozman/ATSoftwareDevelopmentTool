@@ -5,8 +5,6 @@ import subprocess
 import configparser
 import logging
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 used_cert_ids = set()  # Track used cert-ids
@@ -122,8 +120,8 @@ class FlashCert:
             logger.error(f"Unexpected error: {e}")
 
     def update_status(self, certId):
-        # file_path = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
-        file_path = '/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
+        file_path = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
+        # file_path = '/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
 
         # try:
         #     with open(file_path, 'r') as file:
@@ -189,8 +187,8 @@ class FlashCert:
     #         self.update_status_label("Failed", "red", ("Helvetica", 12, "bold"))
 
     def get_bin_path(self, certId):
-        # for root, dirs, files in os.walk("/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/certs"):
         for root, dirs, files in os.walk("/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/certs"):
+        # for root, dirs, files in os.walk("/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/certs"):
             for file in files:
                 if file.endswith(".bin") and certId in file:
                     return os.path.join(root, file)  # Return the path of the .bin file

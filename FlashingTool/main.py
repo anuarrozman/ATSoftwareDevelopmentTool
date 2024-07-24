@@ -28,7 +28,7 @@ from components.aht20Sensor.aht20Sensor import SensorLogger
 # from components.servoControl.servoControl import ServoController
 from components.processOrderNumber.processOrderNumber import get_order_numbers
 from components.readOrderFile.readOrderFile import parse_order_file
-from components.rebootPinS3.rebootPinS3 import RebootPinS3
+# from components.rebootPinS3.rebootPinS3 import RebootPinS3
 from components.loggingReport.loggingReport import setup_logging
 from components.wifiDriver.wifiDriver import scan_wifi_networks
 
@@ -90,7 +90,7 @@ class SerialCommunicationApp:
         self.sendEntry = WriteDeviceInfo(self.send_command, self.result_write_serialnumber, self.result_write_mtqr) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame, self.result_3_3v_test, self.result_5v_test)
         self.multimeter = Multimeter()
-        self.rebootPin = RebootPinS3()
+        # self.rebootPin = RebootPinS3()
         # self.aht20Sensor = SensorLogger()
         # self.servo_controller = ServoController()
 
@@ -1294,9 +1294,15 @@ class SerialCommunicationApp:
         self.root.destroy()
         self.close_serial_port()
 
-    def update_status_label(self, message, fg, font):
-        self.status_label.config(text=message, fg=fg, font=font)  # Update the status label with the message
+    # def log_test(self):
+    #     file_sn = self.read_device_sn.cget("text")
 
+    #     logging.basicConfig(
+    #         filename=file_sn,  # Name of the log file
+    #         level=logging.DEBUG,  # Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    #         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    #     )
+    
 
 if __name__ == "__main__":
     # Delete "sensor.txt" file during boot up
@@ -1304,14 +1310,18 @@ if __name__ == "__main__":
     if os.path.exists(sensor_file):
         os.remove(sensor_file)
 
+    # Configure logging
+    logging.basicConfig(
+        filename='app.log',  # Name of the log file
+        level=logging.DEBUG,  # Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+
+    # Create a logger for main.py
+    logger = logging.getLogger(__name__)
+
     root = tk.Tk()
     app = SerialCommunicationApp(root)
-    # logging.basicConfig(level=logging.DEBUG,
-    #                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    # logger = logging.getLogger(__name__)
-    # Configure logging
-    setup_logging('log.txt')
-    logger = logging.getLogger('main')
 
     root.protocol("WM_DELETE_WINDOW", app.on_exit)
     root.mainloop()
