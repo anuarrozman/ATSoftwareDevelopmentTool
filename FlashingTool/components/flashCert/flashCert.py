@@ -91,14 +91,14 @@ class FlashCert:
         self.log_message(f"CertId {certId} saved to {os.path.join(directory, 'cert_info.ini')}")
 
     def certify(self, bin_path, selected_port):
-        # command = (
-        #     f"openocd -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg "
-        #     f"--command 'program_esp {bin_path} 0x10000 verify exit'"
-        # )
-
         command = (
-            f"esptool.py --port {selected_port} write_flash 0x10000 {bin_path}"
+            f"openocd -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg "
+            f"--command 'program_esp {bin_path} 0x10000 verify exit'"
         )
+
+        # command = (
+        #     f"esptool.py --port {selected_port} write_flash 0x10000 {bin_path}"
+        # )
         
         try:
             # Open subprocess with stdout redirected to PIPE

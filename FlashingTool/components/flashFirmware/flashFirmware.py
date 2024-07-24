@@ -77,32 +77,8 @@ class FlashFirmware:
             logger.error("Error: Unable to find one or more bin files")
             return
 
-        # Run esptool.py command
-        command = f"esptool.py -p {selected_port} -b {selected_baud} write_flash 0x0 {boot_loader_path} 0xc000 {partition_table_path} 0x1e000 {ota_data_initial_path} 0x200000 {fw_path}"
-
-        try:
-            # Open subprocess with stdout redirected to PIPE
-            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-
-            # Read stdout line by line and log in real-time
-            for line in iter(process.stdout.readline, ''):
-                logger.info(line.strip())
-                if "Hard resetting via RTS pin" in line:
-                    logger.info("Firmware Flashing Complete")
-                    break
-                                
-            process.stdout.close()
-            process.wait()  # Wait for the process to finish
-
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Error running esptool.py: {e}")
-        except Exception as e:
-            logger.error(f"An unexpected error occurred: {e}")
-        
-
-        # command = f"openocd -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg --command 'program_esp {ota_data_initial_path} 0x1e000' --command 'program_esp {partition_table_path} 0xc000' --command 'program_esp {boot_loader_path} 0x0' --command 'program_esp {fw_path} 0x200000 verify exit' "
-        # # command = f"openocd -s /home/anuarrozman/esp/openocd-esp32/share/openocd/scripts -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg --command 'program {ota_data_initial_path} 0x1e000' --command 'program {partition_table_path} 0xc000' --command 'program {boot_loader_path} 0x0' --command 'program {fw_path} 0x200000' "
-
+        # # Run esptool.py command
+        # command = f"esptool.py -p {selected_port} -b {selected_baud} write_flash 0x0 {boot_loader_path} 0xc000 {partition_table_path} 0x1e000 {ota_data_initial_path} 0x200000 {fw_path}"
 
         # try:
         #     # Open subprocess with stdout redirected to PIPE
@@ -111,18 +87,42 @@ class FlashFirmware:
         #     # Read stdout line by line and log in real-time
         #     for line in iter(process.stdout.readline, ''):
         #         logger.info(line.strip())
-        #         if "** Verify OK **" in line:
-        #             # process.send_signal(signal.SIGINT)
-        #             process.terminate()
+        #         if "Hard resetting via RTS pin" in line:
         #             logger.info("Firmware Flashing Complete")
         #             break
-
-        #     # Ensure the process has terminated
+                                
         #     process.stdout.close()
-        #     process.wait()
-            
+        #     process.wait()  # Wait for the process to finish
+
         # except subprocess.CalledProcessError as e:
-        #     logger.error(f"Error running openocd: {e}")
+        #     logger.error(f"Error running esptool.py: {e}")
+        # except Exception as e:
+        #     logger.error(f"An unexpected error occurred: {e}")
+        
+
+        command = f"openocd -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg --command 'program_esp {ota_data_initial_path} 0x1e000' --command 'program_esp {partition_table_path} 0xc000' --command 'program_esp {boot_loader_path} 0x0' --command 'program_esp {fw_path} 0x200000 verify exit' "
+        # command = f"openocd -s /home/anuarrozman/esp/openocd-esp32/share/openocd/scripts -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg --command 'program {ota_data_initial_path} 0x1e000' --command 'program {partition_table_path} 0xc000' --command 'program {boot_loader_path} 0x0' --command 'program {fw_path} 0x200000' "
+
+
+        try:
+            # Open subprocess with stdout redirected to PIPE
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+
+            # Read stdout line by line and log in real-time
+            for line in iter(process.stdout.readline, ''):
+                logger.info(line.strip())
+                if "** Verify OK **" in line:
+                    # process.send_signal(signal.SIGINT)
+                    process.terminate()
+                    logger.info("Firmware Flashing Complete")
+                    break
+
+            # Ensure the process has terminated
+            process.stdout.close()
+            process.wait()
+            
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Error running openocd: {e}")
 
         
         # After the process completes, update the flashing status
