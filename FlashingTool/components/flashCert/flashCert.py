@@ -24,7 +24,8 @@ class FlashCert:
             logger.debug(f"Cert ID {cert_id} has already been used.")
             return False
 
-        cert_dir = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/certs'
+        # cert_dir = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/certs'
+        cert_dir = '/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/certs'
         cert_file_path = os.path.join(cert_dir, f"{cert_id}.cert")
 
         # Check if the file exists
@@ -57,7 +58,8 @@ class FlashCert:
         
     def get_certId(self):
         try:
-            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            # with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            with open('/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
                 for line in file:
                     if 'Matter Cert ID:' in line and 'Status: None' in line:
                         certId = line.split('Matter Cert ID: ')[1].split(',')[0].strip()
@@ -89,9 +91,13 @@ class FlashCert:
         self.log_message(f"CertId {certId} saved to {os.path.join(directory, 'cert_info.ini')}")
 
     def certify(self, bin_path, selected_port):
+        # command = (
+        #     f"openocd -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg "
+        #     f"--command 'program_esp {bin_path} 0x10000 verify exit'"
+        # )
+
         command = (
-            f"openocd -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg "
-            f"--command 'program_esp {bin_path} 0x10000 verify exit'"
+            f"esptool.py --port {selected_port} write_flash 0x10000 {bin_path}"
         )
         
         try:
@@ -116,48 +122,71 @@ class FlashCert:
             logger.error(f"Unexpected error: {e}")
 
     def update_status(self, certId):
-        file_path = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
+        # file_path = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
+        file_path = '/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
 
+        # try:
+        #     with open(file_path, 'r') as file:
+        #         lines = file.readlines()
+            
+        #     with open(file_path, 'w') as file:
+        #         for line in lines:
+        #             if f'cert-id: {certId}' in line and 'Status: None' in line:
+        #                 logger.debug(f"Updating status to '0' for certId {certId}")
+        #                 line = line.replace('Status: None', 'Status: 0')
+        #             file.write(line)
+            
+        #     self.log_message(f"Status updated to '0' for certId {certId} in cert_info.txt.")
+        logger.debug(f"Updating status for certId {certId}")
         try:
+            start_index = certId.rfind('/') + 1  # Find the last occurrence of '/'
+            end_index = certId.rfind('.cert')  # Find the position of '.cert'
+            filtered_cert_id = certId[start_index:end_index]
+
             with open(file_path, 'r') as file:
                 lines = file.readlines()
             
             with open(file_path, 'w') as file:
                 for line in lines:
-                    if f'cert-id: {certId}' in line and 'Status: None' in line:
-                        logger.debug(f"Updating status to '0' for certId {certId}")
-                        line = line.replace('Status: None', 'Status: 0')
+                    if 'Status: 0' in line:
+                        logger.debug("Status already updated.")
+                    elif f'cert-id: {filtered_cert_id}' in line:
+                        logger.debug(f"Updating status to '0' for certId {filtered_cert_id}")
+                        line = line.rstrip() + ', Status: 0\n'
+                    else:
+                        logger.debug(f"Line: {line.strip()}")
+                        line = line.rstrip() + '\n'
                     file.write(line)
             
-            self.log_message(f"Status updated to '0' for certId {certId} in cert_info.txt.")
+            # self.log_message(f"Status updated to '0' for certId {filtered_cert_id} in cert_info.txt.")
         except IOError as e:
             self.log_message(f"Error updating status in file: {e}")
         except Exception as e:
             self.log_message(f"An unexpected error occurred: {e}")
 
-    def flash_cert(self, port_var):
-        certId = self.get_certId()
-        selected_port = port_var
-        if certId:
-            bin_path = self.get_bin_path(certId)
-            if bin_path:
-                if selected_port:
-                    self.log_message(f"Flashing cert {certId} on port {selected_port}...")
-                    self.certify(bin_path, selected_port)
-                    self.update_status(certId)
-                    self.create_folder()
-                    self.save_cert_id_to_ini(os.path.join(os.path.dirname(__file__), self.get_serial_number()), certId)
-                    self.log_message(f"Cert {certId} flashed successfully.")
-                    self.update_status_label("Completed", "green", ("Helvetica", 12, "bold"))
-                else:
-                    self.log_message("No port selected. Please select a port before flashing.")
-                    self.update_status_label("Failed", "red", ("Helvetica", 12, "bold"))
-            else:
-                self.log_message(f"No .bin file found for certId {certId}.")
-                self.update_status_label("Failed", "red", ("Helvetica", 12, "bold"))
-        else:
-            self.log_message("No available certId found in the text file.")
-            self.update_status_label("Failed", "red", ("Helvetica", 12, "bold"))
+    # def flash_cert(self, port_var):
+    #     certId = self.get_certId()
+    #     selected_port = port_var
+    #     if certId:
+    #         bin_path = self.get_bin_path(certId)
+    #         if bin_path:
+    #             if selected_port:
+    #                 self.log_message(f"Flashing cert {certId} on port {selected_port}...")
+    #                 self.certify(bin_path, selected_port)
+    #                 self.update_status(certId)
+    #                 self.create_folder()
+    #                 self.save_cert_id_to_ini(os.path.join(os.path.dirname(__file__), self.get_serial_number()), certId)
+    #                 self.log_message(f"Cert {certId} flashed successfully.")
+    #                 self.update_status_label("Completed", "green", ("Helvetica", 12, "bold"))
+    #             else:
+    #                 self.log_message("No port selected. Please select a port before flashing.")
+    #                 self.update_status_label("Failed", "red", ("Helvetica", 12, "bold"))
+    #         else:
+    #             self.log_message(f"No .bin file found for certId {certId}.")
+    #             self.update_status_label("Failed", "red", ("Helvetica", 12, "bold"))
+    #     else:
+    #         self.log_message("No available certId found in the text file.")
+    #         self.update_status_label("Failed", "red", ("Helvetica", 12, "bold"))
 
     def get_bin_path(self, certId):
         # for root, dirs, files in os.walk("/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/certs"):

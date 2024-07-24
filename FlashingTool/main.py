@@ -28,10 +28,13 @@ from components.aht20Sensor.aht20Sensor import SensorLogger
 # from components.servoControl.servoControl import ServoController
 from components.processOrderNumber.processOrderNumber import get_order_numbers
 from components.readOrderFile.readOrderFile import parse_order_file
-from components.rebootPinS3.rebootPinS3 import RebootPinS3
+# from components.rebootPinS3.rebootPinS3 import RebootPinS3
+from components.loggingReport.loggingReport import setup_logging
+from components.wifiDriver.wifiDriver import scan_wifi_networks
 
 
-file_path = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'  # Specify the correct path to your text file
+# file_path = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'  # Specify the correct path to your text file
+file_path = '/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
 orders = parse_order_file(file_path)
 order_numbers = get_order_numbers(orders)
 
@@ -77,7 +80,8 @@ class SerialCommunicationApp:
 
     def initialize_components(self):
         
-        file_path = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
+        # file_path = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
+        file_path = '/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
         self.toolsBar = ToolsBar()
         self.flashFw = FlashFirmware(self.result_flashing_fw_label, self.result_flashing_fw_h2_label, self.result_mac_address_label) #(self.receive_text)
         self.flashCert = FlashCert(self.result_flashing_cert_label) #(self.log_message)
@@ -86,7 +90,7 @@ class SerialCommunicationApp:
         self.sendEntry = WriteDeviceInfo(self.send_command, self.result_write_serialnumber, self.result_write_mtqr) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame, self.result_3_3v_test, self.result_5v_test)
         self.multimeter = Multimeter()
-        self.rebootPin = RebootPinS3()
+        # self.rebootPin = RebootPinS3()
         # self.aht20Sensor = SensorLogger()
         # self.servo_controller = ServoController()
 
@@ -150,7 +154,7 @@ class SerialCommunicationApp:
                         if ext_sensor == atbeam_humid:
                             logger.info("Humidity matches")
                             self.result_humid_label.config(text=f"Pass", fg="green", font=("Helvetica", 12, "bold"))
-                        elif abs(ext_sensor - atbeam_humid) <= 10:
+                        elif abs(ext_sensor - atbeam_humid) <= 10: # humid range
                             logger.info("Humidity is within ±10 range")
                             self.result_humid_label.config(text="Pass", fg="green", font=("Helvetica", 12, "bold"))
                         else:
@@ -164,7 +168,7 @@ class SerialCommunicationApp:
         logger.debug(f"Manual 3.3V DMM Value: {dmm_manual_input}")
         self.dmm_3_3V_reader.config(text=f"{dmm_manual_input} V", fg="black", font=("Helvetica", 12, "bold"))
         
-        if 2.9 <= float(dmm_manual_input) <= 3.3:
+        if 3.0 <= float(dmm_manual_input) <= 3.6:
             self.result_3_3v_test.config(text="Pass", fg="green", font=("Helvetica", 12, "bold"))
         else:
             self.result_3_3v_test.config(text="Failed", fg="red", font=("Helvetica", 12, "bold"))
@@ -178,6 +182,27 @@ class SerialCommunicationApp:
             self.result_5v_test.config(text="Pass", fg="green", font=("Helvetica", 12, "bold"))
         else:
             self.result_5v_test.config(text="Failed", fg="red", font=("Helvetica", 12, "bold"))
+
+    def wifi_scanning(self):
+        mtqr_wifi = self.read_device_mtqr.cget("text")
+        mtqr_wifi_name = f"AT-{mtqr_wifi}"
+        logger.debug(f"MTQR for WiFi scanning: {mtqr_wifi_name}")
+        wifi_networks = scan_wifi_networks()
+
+        if wifi_networks:
+            logger.info("Available WiFi networks:")
+            for network in wifi_networks:
+                ssid = network.get('SSID', 'Unknown')
+                signal_level = network.get('Signal_Level', 'N/A')
+                logger.info(f"SSID: {ssid}, Signal Level: {signal_level}")
+                if ssid == {mtqr_wifi_name}:
+                    logger.info(f"Target network found: SSID: {ssid}, Signal Level: {signal_level}")
+                    if -30 <= signal_level <= -110:
+                        logger.info("Signal level is usable.")
+                        self.result_group2_wifi_softap.config(text="Pass", fg="green", font=("Helvetica", 12, "bold"))
+                        self.result_group2_wifi_softap_rssi.config(text=f"{signal_level} dBm", fg="black", font=("Helvetica", 12, "bold"))
+        else:
+            logger.info("No WiFi networks found.")
 
     def refresh_dmm_devices(self):
         self.dmmReader.refresh_devices()
@@ -341,7 +366,8 @@ class SerialCommunicationApp:
         
     def read_port_from_config(self):
         ini_file_name = "testscript.ini"
-        specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"
+        # specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"
+        specified_directory = "/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/"
 
         # Check in the specified directory
         ini_file_path = os.path.join(specified_directory, ini_file_name)
@@ -407,7 +433,8 @@ class SerialCommunicationApp:
     def create_widgets(self):
         
         # file_path = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
-        file_path = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
+        file_path = '/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'        
+        
         order_numbers = self.read_order_numbers(file_path)
 
         # Create a frame for the canvas
@@ -504,7 +531,7 @@ class SerialCommunicationApp:
         self.read_atbeam_humid_button = ttk.Button(self.serial_baud_frame, text="Read ATBeam Humid", command=self.get_atbeam_humid)
         self.read_atbeam_humid_button.grid(row=1, column=10, padx=5, pady=5, sticky=tk.W)
 
-        self.disable_frame(self.serial_baud_frame)
+        # self.disable_frame(self.serial_baud_frame)
 
         self.text_frame = tk.Frame(self.scrollable_frame)
         self.text_frame.grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
@@ -515,7 +542,7 @@ class SerialCommunicationApp:
         self.send_button = ttk.Button(self.text_frame, text="Send", command=lambda: self.sendEntry.send_entry_command(self.send_entry_frame))
         self.send_button.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
 
-        self.disable_frame(self.text_frame)
+        # self.disable_frame(self.text_frame)
 
         self.servo_frame = tk.Frame(self.scrollable_frame)
         self.servo_frame.grid(row=4, column=0, padx=10, pady=10, sticky=tk.W)
@@ -748,11 +775,14 @@ class SerialCommunicationApp:
         self.result_group2_factory_mode = tk.Label(self.group2_frame, text="Not Yet")
         self.result_group2_factory_mode.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
 
-        self.status_group2_wifi_softap = tk.Label(self.group2_frame, text="Wi-Fi Soft AP: ")
-        self.status_group2_wifi_softap.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
+        self.status_group2_wifi_softap_label = tk.Label(self.group2_frame, text="Wi-Fi Soft AP: ")
+        self.status_group2_wifi_softap_label.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
 
         self.result_group2_wifi_softap = tk.Label(self.group2_frame, text="Not Yet")
         self.result_group2_wifi_softap.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
+
+        self.result_group2_wifi_softap_rssi = tk.Label(self.group2_frame, text="-")
+        self.result_group2_wifi_softap_rssi.grid(row=2, column=2, padx=5, pady=5, sticky=tk.W)
 
         self.status_group2_wifi_station = tk.Label(self.group2_frame, text="Wi-Fi Station: ")
         self.status_group2_wifi_station.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
@@ -961,7 +991,8 @@ class SerialCommunicationApp:
         self.stop_event.clear()  # Clear the stop event before starting the tasks
 
         ini_file_name = "testscript.ini"
-        specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"
+        # specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"
+        specified_directory = "/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/"
 
         # Check in the specified directory
         ini_file_path = os.path.join(specified_directory, ini_file_name)
@@ -992,7 +1023,8 @@ class SerialCommunicationApp:
             port1 = config.get("flash", "port1")
             logger.info(f"Port: {port}, Baud: {baud}")
             self.flashFw.get_device_mac_address(port)
-            self.flashCertificate(self.selected_cert_id, "/dev/ttyACM0")
+            # self.flashCertificate(self.selected_cert_id, "/dev/ttyACM0")
+            self.flashCertificate(self.selected_cert_id, "/dev/ttyUSB0")
 
             time.sleep(10)
             
@@ -1001,16 +1033,16 @@ class SerialCommunicationApp:
             self.flashFw.export_esp_idf_path()
             
             with concurrent.futures.ThreadPoolExecutor() as executor:
-                future_s3 = executor.submit(self.flash_s3_firmware, port, baud)
-                future_h2 = executor.submit(self.flash_h2_firmware, port1, baud)
+                future_s3 = executor.submit(self.flash_s3_firmware, port1, baud)
+                # future_h2 = executor.submit(self.flash_h2_firmware, port1, baud)
 
                 # Wait for both futures to complete
-                concurrent.futures.wait([future_s3, future_h2])
+                concurrent.futures.wait([future_s3]) #, future_h2])
 
 
         if "factory" in config:
-            self.rebootPin.reboot_esp32()
-            self.rebootPin.cleanup()
+            # self.rebootPin.reboot_esp32()
+            # self.rebootPin.cleanup()
             logger.info("Entering factory mode")
             try:
                 port = config.get("factory", "port")
@@ -1030,7 +1062,8 @@ class SerialCommunicationApp:
         logger.info("Starting test2")
 
         ini_file_name = "testscript.ini"
-        specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"
+        # specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"
+        specified_directory = "/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/"
 
         # Check in the specified directory
         ini_file_path = os.path.join(specified_directory, ini_file_name)
@@ -1099,17 +1132,23 @@ class SerialCommunicationApp:
             logger.info("Comparing Humidity")
             self.read_humid_aht20()
             self.result_group2_factory_mode.config(text="Pass", fg="green", font=("Helvetica", 12, "bold"))
+            self.factory_flag = self.serialCom.device_factory_mode
+            self.factory_flag = False
             time.sleep(self.step_delay)
             
         if "wifi_softap" in config:
-            logger.info("Starting Wi-Fi Soft AP")
+            self.send_command("FF:3;reboot\r\n")
+            self.factory_flag = self.serialCom.device_factory_mode
+            self.factory_flag = True
+            logger.debug(f"Factory Flag: {self.factory_flag}")
+            time.sleep(3)
+            # add wifi logic here
+            logger.info("Start Checking Wi-Fi Soft AP")
+            self.wifi_scanning()
             time.sleep(self.step_delay)
             
         if "wifi_station" in config:
             logger.info("Starting Wi-Fi Station")
-            self.factory_flag = self.serialCom.device_factory_mode
-            # add wifi logic here
-            self.factory_flag = False #set flag to false after wifi station is done
             time.sleep(self.step_delay)
             
         if "ir_def" in config:
@@ -1118,7 +1157,7 @@ class SerialCommunicationApp:
             self.send_command(ir_def + "\r\n")
 
         while time.time() - start_time < duration:
-            if "manual_test_loop" in config and self.manual_test and self.factory_flag == False:
+            if "manual_test_loop" in config and self.manual_test and self.factory_flag == True:
                 logger.debug(self.factory_flag)
                 self.enable_frame(self.group3_frame)
                 logger.info("Starting manual test loop")             
@@ -1128,6 +1167,7 @@ class SerialCommunicationApp:
                 offLed = config.get("manual_test_loop", "offLed")
                 ir_send = config.get("manual_test_loop", "ir_send")
                 logger.debug(f"Red LED: {redLed}, Green LED: {greenLed}, Blue LED: {blueLed}, IR Send: {ir_send}")
+                time.sleep(1)
                 self.send_command(redLed + "\r\n")
                 time.sleep(1)
                 self.send_command(greenLed + "\r\n")
@@ -1137,6 +1177,7 @@ class SerialCommunicationApp:
                 self.send_command(offLed + "\r\n")
                 time.sleep(2)
                 self.send_command(ir_send + "\r\n")
+                time.sleep(1)
             else:
                 logger.error("Manual test loop not found in the INI file")
                 break
@@ -1263,9 +1304,12 @@ if __name__ == "__main__":
 
     root = tk.Tk()
     app = SerialCommunicationApp(root)
-    logging.basicConfig(level=logging.DEBUG,
-                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    logger = logging.getLogger(__name__)
+    # logging.basicConfig(level=logging.DEBUG,
+    #                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    # logger = logging.getLogger(__name__)
+    # Configure logging
+    setup_logging('log.txt')
+    logger = logging.getLogger('main')
 
     root.protocol("WM_DELETE_WINDOW", app.on_exit)
     root.mainloop()

@@ -56,11 +56,13 @@ class FlashFirmware:
             "partition_table": "partition-table",
             "ota_data_initial": "ota_data_initial",
             # "firmware": "adt_matter_project_"
-            "firmware": "v1_0_0-20240716-de5"
+            # "firmware": "v1_0_0-20240716-de5"
+            "firmware": "v1_0_0-20240717-rc1"
         }
 
         # Define the directory to search in
-        search_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/firmware/s3"
+        # search_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/firmware/s3"
+        search_directory = "/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/firmware/s3"
 
         # Find paths for each bin file using keywords
         bin_paths = {key: self.find_bin_path(keyword, search_directory) for key, keyword in keywords.items()}
@@ -76,37 +78,7 @@ class FlashFirmware:
             return
 
         # Run esptool.py command
-        # command = f"esptool.py -p {selected_port} -b {selected_baud} write_flash 0x0 {boot_loader_path} 0xc000 {partition_table_path} 0x1e000 {ota_data_initial_path} 0x200000 {fw_path}"
-        # command = f"openocd -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg --command 'program {fw_path} 0x200000' --command 'program {ota_data_initial_path} 0x1e000' --command 'program {partition_table_path} 0xc000' --command 'program {boot_loader_path} 0x0'"
-
-        # try:
-        #     # Open subprocess with stdout redirected to PIPE
-        #     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-
-        #     # Read stdout line by line and log in real-time
-        #     for line in iter(process.stdout.readline, ''):
-        #         logger.info(line.strip())
-        #         # if "Hard resetting via RTS pin" in line:
-        #         #     logger.info("Firmware Flashing Complete")
-        #         if "Listening on port 4444 for telnet connections" in line:
-        #             # execute terminate openocd here
-        #             process.send_signal(subprocess.signal.SIGINT)
-        #             break
-                
-        #             logger.info("Firmware Flashing Complete")
-
-        #     process.stdout.close()
-        #     process.wait()  # Wait for the process to finish
-
-        # except subprocess.CalledProcessError as e:
-        #     logger.error(f"Error running esptool.py: {e}")
-        # except Exception as e:
-        #     logger.error(f"An unexpected error occurred: {e}")
-        
-
-        command = f"openocd -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg --command 'program_esp {ota_data_initial_path} 0x1e000' --command 'program_esp {partition_table_path} 0xc000' --command 'program_esp {boot_loader_path} 0x0' --command 'program_esp {fw_path} 0x200000 verify exit' "
-        # command = f"openocd -s /home/anuarrozman/esp/openocd-esp32/share/openocd/scripts -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg --command 'program {ota_data_initial_path} 0x1e000' --command 'program {partition_table_path} 0xc000' --command 'program {boot_loader_path} 0x0' --command 'program {fw_path} 0x200000' "
-
+        command = f"esptool.py -p {selected_port} -b {selected_baud} write_flash 0x0 {boot_loader_path} 0xc000 {partition_table_path} 0x1e000 {ota_data_initial_path} 0x200000 {fw_path}"
 
         try:
             # Open subprocess with stdout redirected to PIPE
@@ -115,18 +87,42 @@ class FlashFirmware:
             # Read stdout line by line and log in real-time
             for line in iter(process.stdout.readline, ''):
                 logger.info(line.strip())
-                if "** Verify OK **" in line:
-                    # process.send_signal(signal.SIGINT)
-                    process.terminate()
+                if "Hard resetting via RTS pin" in line:
                     logger.info("Firmware Flashing Complete")
                     break
-
-            # Ensure the process has terminated
+                                
             process.stdout.close()
-            process.wait()
-            
+            process.wait()  # Wait for the process to finish
+
         except subprocess.CalledProcessError as e:
-            logger.error(f"Error running openocd: {e}")
+            logger.error(f"Error running esptool.py: {e}")
+        except Exception as e:
+            logger.error(f"An unexpected error occurred: {e}")
+        
+
+        # command = f"openocd -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg --command 'program_esp {ota_data_initial_path} 0x1e000' --command 'program_esp {partition_table_path} 0xc000' --command 'program_esp {boot_loader_path} 0x0' --command 'program_esp {fw_path} 0x200000 verify exit' "
+        # # command = f"openocd -s /home/anuarrozman/esp/openocd-esp32/share/openocd/scripts -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg --command 'program {ota_data_initial_path} 0x1e000' --command 'program {partition_table_path} 0xc000' --command 'program {boot_loader_path} 0x0' --command 'program {fw_path} 0x200000' "
+
+
+        # try:
+        #     # Open subprocess with stdout redirected to PIPE
+        #     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+
+        #     # Read stdout line by line and log in real-time
+        #     for line in iter(process.stdout.readline, ''):
+        #         logger.info(line.strip())
+        #         if "** Verify OK **" in line:
+        #             # process.send_signal(signal.SIGINT)
+        #             process.terminate()
+        #             logger.info("Firmware Flashing Complete")
+        #             break
+
+        #     # Ensure the process has terminated
+        #     process.stdout.close()
+        #     process.wait()
+            
+        # except subprocess.CalledProcessError as e:
+        #     logger.error(f"Error running openocd: {e}")
 
         
         # After the process completes, update the flashing status
@@ -144,7 +140,8 @@ class FlashFirmware:
         }
 
         # Define the directory to search in
-        search_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/firmware/h2"
+        # search_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/firmware/h2"
+        search_directory = "/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/firmware/h2"
 
         # Find paths for each bin file using keywords
         bin_paths = {key: self.find_bin_path(keyword, search_directory) for key, keyword in keywords.items()}

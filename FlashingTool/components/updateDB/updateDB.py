@@ -44,7 +44,8 @@ class UpdateDB:
                 logger.info("MySQL connection closed.")
 
     def update_text_file(self, mac_address):
-        file_path = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
+        # file_path = '/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
+        file_path = '/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt'
 
         try:
             with open(file_path, 'r+') as file:
