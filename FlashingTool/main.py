@@ -28,7 +28,7 @@ from components.aht20Sensor.aht20Sensor import SensorLogger
 # from components.servoControl.servoControl import ServoController
 from components.processOrderNumber.processOrderNumber import get_order_numbers
 from components.readOrderFile.readOrderFile import parse_order_file
-# from components.rebootPinS3.rebootPinS3 import RebootPinS3
+from components.rebootPinS3.rebootPinS3 import RebootPinS3
 from components.loggingReport.loggingReport import setup_logging
 from components.wifiDriver.wifiDriver import scan_wifi_networks
 
@@ -90,7 +90,7 @@ class SerialCommunicationApp:
         self.sendEntry = WriteDeviceInfo(self.send_command, self.result_write_serialnumber, self.result_write_mtqr) #, self.log_message)
         self.dmmReader = DeviceSelectionApp(self.dmm_frame, self.result_3_3v_test, self.result_5v_test)
         self.multimeter = Multimeter()
-        # self.rebootPin = RebootPinS3()
+        self.rebootPin = RebootPinS3()
         # self.aht20Sensor = SensorLogger()
         # self.servo_controller = ServoController()
 
@@ -366,8 +366,8 @@ class SerialCommunicationApp:
         
     def read_port_from_config(self):
         ini_file_name = "testscript.ini"
-        # specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"
-        specified_directory = "/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/"
+        specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"
+        # specified_directory = "/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/"
 
         # Check in the specified directory
         ini_file_path = os.path.join(specified_directory, ini_file_name)
@@ -991,8 +991,8 @@ class SerialCommunicationApp:
         self.stop_event.clear()  # Clear the stop event before starting the tasks
 
         ini_file_name = "testscript.ini"
-        # specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"
-        specified_directory = "/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/"
+        specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"
+        # specified_directory = "/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/"
 
         # Check in the specified directory
         ini_file_path = os.path.join(specified_directory, ini_file_name)
@@ -1041,8 +1041,8 @@ class SerialCommunicationApp:
 
 
         if "factory" in config:
-            # self.rebootPin.reboot_esp32()
-            # self.rebootPin.cleanup()
+            self.rebootPin.reboot_esp32()
+            self.rebootPin.cleanup()
             logger.info("Entering factory mode")
             try:
                 port = config.get("factory", "port")
@@ -1062,8 +1062,8 @@ class SerialCommunicationApp:
         logger.info("Starting test2")
 
         ini_file_name = "testscript.ini"
-        # specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"
-        specified_directory = "/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/"
+        specified_directory = "/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool"
+        # specified_directory = "/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/"
 
         # Check in the specified directory
         ini_file_path = os.path.join(specified_directory, ini_file_name)
@@ -1137,7 +1137,9 @@ class SerialCommunicationApp:
             time.sleep(self.step_delay)
             
         if "wifi_softap" in config:
-            self.send_command("FF:3;reboot\r\n")
+            # self.send_command("FF:3;reboot\r\n")
+            self.rebootPin.reboot_esp32()
+            self.rebootPin.cleanup()
             self.factory_flag = self.serialCom.device_factory_mode
             self.factory_flag = True
             logger.debug(f"Factory Flag: {self.factory_flag}")
