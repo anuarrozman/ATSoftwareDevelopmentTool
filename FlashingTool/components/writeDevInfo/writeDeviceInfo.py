@@ -36,7 +36,7 @@ class WriteDeviceInfo:
 
             lines[index] = old_line.replace('Status: 1', 'Status: 2')
 
-            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
             # with open('/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
                 file.writelines(lines)
 
@@ -82,7 +82,7 @@ class WriteDeviceInfo:
 
             lines[index] = old_line.replace('Status: 2', 'Status: 3')
 
-            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'r') as file:
+            with open('/usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
             # with open('/home/anuarrozman/Airdroitech/ATSoftwareDevelopmentTool/FlashingTool/device_data.txt', 'w') as file:
                 file.writelines(lines)
 
