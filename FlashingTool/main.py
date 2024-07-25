@@ -1284,7 +1284,17 @@ class SerialCommunicationApp:
         self.ext_humid_value.config(text="Ext %", fg="black", font=("Helvetica", 10, "normal"))
         self.input_3_3V_dmm.delete(0, tk.END)
         self.input_5V_dmm.delete(0, tk.END)
-
+        self.result_read_prod_name.config(text="Not Yet", fg="black", font=("Helvetica", 10, "normal"))
+        self.read_prod_name.config(text="-", fg="black", font=("Helvetica", 10, "normal"))
+        self.result_mac_address_label.config(text="Not Yet", fg="black", font=("Helvetica", 10, "normal"))
+        self.result_group2_factory_mode.config(text="Not Yet", fg="black", font=("Helvetica", 10, "normal"))
+        self.result_ir_def_label.config(text="Not Yet", fg="black", font=("Helvetica", 10, "normal"))
+        self.result_ir_led1.config(text="Not Yet", fg="black", font=("Helvetica", 10, "normal"))
+        self.result_ir_led2.config(text="Not Yet", fg="black", font=("Helvetica", 10, "normal"))
+        self.result_ir_led3.config(text="Not Yet", fg="black", font=("Helvetica", 10, "normal"))
+        self.result_ir_led4.config(text="Not Yet", fg="black", font=("Helvetica", 10, "normal"))
+        self.result_ir_led5.config(text="Not Yet", fg="black", font=("Helvetica", 10, "normal"))
+        self.cert_status_label.config(text=" ", fg="black", font=("Helvetica", 10, "normal"))
 
     # def press_button(self, angle, pressing_duration, pressing_time):
     #     # angle = float(self.angle_entry.get())
