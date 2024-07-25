@@ -1219,7 +1219,9 @@ class SerialCommunicationApp:
             os.rename(destination_path, renamed_file_path)
 
             logger.info(f'Log file copied and renamed to {renamed_file_path}')
-            self.process_reset_device()
+            # self.process_reset_device()
+            logger.info("Test Completed")
+            self.reset_tasks()
 
 
     def start_task2_thread(self):
