@@ -1208,14 +1208,17 @@ class SerialCommunicationApp:
             destination_path = os.path.join(destination_directory, 'app.log')
 
             # Ensure the destination directory exists
+            logger.debug(f'Creating directory if it does not exist: {destination_directory}')
             os.makedirs(destination_directory, exist_ok=True)
 
             # Copy the log file to the destination
+            logger.debug(f'Copying log file from {source_path} to {destination_path}')
             shutil.copy2(source_path, destination_path)
 
-            # Rename the copied log file with a timestamp
+            # Rename the copied log file with a timestamp or device serial number
             log_name = self.read_device_sn.cget("text")
             renamed_file_path = os.path.join(destination_directory, f'{log_name}.log')
+            logger.debug(f'Renaming copied log file to {renamed_file_path}')
             os.rename(destination_path, renamed_file_path)
 
             logger.info(f'Log file copied and renamed to {renamed_file_path}')
