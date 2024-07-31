@@ -98,11 +98,12 @@ class FlashFirmware:
         #     logger.error(f"An unexpected error occurred: {e}")
         
 
-        command = f"openocd -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg --command 'program_esp {ota_data_initial_path} 0x1e000' --command 'program_esp {partition_table_path} 0xc000' --command 'program_esp {boot_loader_path} 0x0' --command 'program_esp {fw_path} 0x200000 verify exit' "
+        command = f"openocd -f /usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/openocd/esp_usb_jtag.cfg -f /usr/src/app/ATSoftwareDevelopmentTool/FlashingTool/openocd/esp32s3-builtin.cfg --command 'program_esp {ota_data_initial_path} 0x1e000' --command 'program_esp {partition_table_path} 0xc000' --command 'program_esp {boot_loader_path} 0x0' --command 'program_esp {fw_path} 0x200000 verify exit' "
         # command = f"openocd -s /home/anuarrozman/esp/openocd-esp32/share/openocd/scripts -f openocd/esp_usb_jtag.cfg -f openocd/esp32s3-builtin.cfg --command 'program {ota_data_initial_path} 0x1e000' --command 'program {partition_table_path} 0xc000' --command 'program {boot_loader_path} 0x0' --command 'program {fw_path} 0x200000' "
 
 
         try:
+            logger.info(f"Flashing S3 Firmware: {command}")
             # Open subprocess with stdout redirected to PIPE
             process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
@@ -157,6 +158,7 @@ class FlashFirmware:
         command = f"esptool.py -p {selected_port} -b {selected_baud} write_flash 0x0 {boot_loader_path} 0x8000 {partition_table_path} 0x10000 {fw_path}"
 
         try:
+            logger.info(f"Flashing H2 Firmware: {command}")
             # Open subprocess with stdout redirected to PIPE
             process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
